@@ -1,0 +1,33 @@
+{
+  "id": "/",
+  "name": "Breaking News Wala Control Room",
+  "short_name": "BNW Control",
+  "description": "AI-Powered Newsroom Control Room for automated district news graphics, video syndication, and multi-channel publishing.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#080A0F",
+  "background_color": "#080A0F",
+  "categories": ["news", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/Logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/Logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/Logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "Breaking News Wala Control Room",
+  "description": "AI-Powered Newsroom Control Room for automated district news graphics, video syndication, AI SEO, and multi-channel publishing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-red: #E21A25;
+  --color-brand-darkred: #9E0E16;
+  --color-brand-yellow: #FFED00;
+  --color-brand-gold: #F59E0B;
+  --color-brand-dark: #080A0F;
+  --color-brand-card: #121622;
+  --color-brand-cardhover: #181E2E;
+  --color-brand-border: #232B3E;
+  --color-brand-muted: #8E9BAE;
+}
+
+@layer base {
+  body {
+    font-family: 'Inter', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    background-color: #080A0F;
+    color: #F1F5F9;
+  }
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #080A0F;
+}
+::-webkit-scrollbar-thumb {
+  background: #232B3E;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #E21A25;
+}
+
+@keyframes pulseLive {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+.pulse-live {
+  animation: pulseLive 1.5s infinite;
+}
+
+.graphic-card-ratio {
+  aspect-ratio: 4 / 5;
+}
+
+/* Glow effects */
+.glow-red {
+  box-shadow: 0 0 20px rgba(226, 26, 37, 0.35);
+}
+.glow-yellow {
+  box-shadow: 0 0 20px rgba(255, 237, 0, 0.25);
+}
+
+/* Smooth Scrolling News Alert Marquee */
+@keyframes marqueeScroll {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: marqueeScroll 30s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}

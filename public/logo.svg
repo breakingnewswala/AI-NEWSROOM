@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 260" width="100%" height="100%" fill="none">
+  <defs>
+    <!-- Filter for subtle drop shadow -->
+    <filter id="shadow" x="-5%" y="-5%" width="115%" height="115%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="2" dy="3" stdDeviation="3" flood-opacity="0.35"/>
+    </filter>
+    <radialGradient id="globeGrad" cx="40%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#FFE885"/>
+      <stop offset="60%" stop-color="#FFCC00"/>
+      <stop offset="100%" stop-color="#EAA000"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Yellow Rounded Banner Container with Red Border -->
+  <path d="M 160 12 L 580 12 A 58 58 0 0 1 638 70 L 638 238 A 10 10 0 0 1 628 248 L 160 248 Z" 
+        fill="#FFEB00" stroke="#E21A25" stroke-width="8" stroke-linejoin="round" />
+
+  <!-- Inner Red Accent Line on Top/Right of the pill -->
+  <path d="M 160 20 L 575 20 A 50 50 0 0 1 625 70 L 625 240" 
+        fill="none" stroke="#D0121C" stroke-width="2.5" opacity="0.6"/>
+
+  <!-- ================= LEFT GLOBE ================= -->
+  <g id="globeGroup" filter="url(#shadow)">
+    <!-- Globe Base Circle -->
+    <circle cx="135" cy="130" r="122" fill="url(#globeGrad)" stroke="#E21A25" stroke-width="5"/>
+
+    <!-- Latitude / Longitude Red Grid Lines -->
+    <!-- Equator -->
+    <ellipse cx="135" cy="130" rx="120" ry="12" fill="none" stroke="#E21A25" stroke-width="1.8" opacity="0.85"/>
+    <ellipse cx="135" cy="85" rx="108" ry="10" fill="none" stroke="#E21A25" stroke-width="1.6" opacity="0.8"/>
+    <ellipse cx="135" cy="175" rx="108" ry="10" fill="none" stroke="#E21A25" stroke-width="1.6" opacity="0.8"/>
+    <ellipse cx="135" cy="48" rx="80" ry="8" fill="none" stroke="#E21A25" stroke-width="1.4" opacity="0.75"/>
+    <ellipse cx="135" cy="212" rx="80" ry="8" fill="none" stroke="#E21A25" stroke-width="1.4" opacity="0.75"/>
+
+    <!-- Longitude meridians -->
+    <ellipse cx="135" cy="130" rx="42" ry="120" fill="none" stroke="#E21A25" stroke-width="1.8" opacity="0.85"/>
+    <ellipse cx="135" cy="130" rx="85" ry="120" fill="none" stroke="#E21A25" stroke-width="1.8" opacity="0.85"/>
+    <line x1="135" y1="8" x2="135" y2="252" stroke="#E21A25" stroke-width="2"/>
+
+    <!-- Blue Continents Overlay (Stylized Africa, Europe, Asia, Arabia) -->
+    <!-- Europe & Mediterranean -->
+    <path d="M 95 45 C 105 40, 125 35, 140 42 C 150 48, 175 40, 185 55 C 190 65, 175 75, 160 78 C 145 80, 130 75, 120 70 C 110 65, 90 70, 85 58 Z" 
+          fill="#3250C8" stroke="#1E3A8A" stroke-width="1.2"/>
+    <!-- Africa & Middle East -->
+    <path d="M 105 82 C 120 80, 145 78, 165 85 C 178 90, 185 105, 195 115 C 205 130, 190 145, 175 160 C 160 178, 145 205, 128 228 C 115 220, 102 185, 95 165 C 88 145, 80 135, 78 120 C 75 105, 90 85, 105 82 Z" 
+          fill="#3250C8" stroke="#1E3A8A" stroke-width="1.2"/>
+    <!-- Arabian Peninsula & West Asia -->
+    <path d="M 188 95 C 198 90, 215 95, 225 110 C 230 120, 222 135, 210 142 C 198 148, 185 135, 182 120 C 180 108, 182 100, 188 95 Z" 
+          fill="#3250C8" stroke="#1E3A8A" stroke-width="1.2"/>
+    <!-- Indian Subcontinent & Central Asia snippet -->
+    <path d="M 218 85 C 230 80, 248 88, 252 102 C 255 115, 245 130, 235 140 C 228 148, 220 140, 218 128 Z" 
+          fill="#3250C8" stroke="#1E3A8A" stroke-width="1.2"/>
+    <!-- Small islands / detail blobs -->
+    <circle cx="168" cy="72" r="3.5" fill="#3250C8"/>
+    <circle cx="180" cy="80" r="4" fill="#3250C8"/>
+  </g>
+
+  <!-- ================= TEXT SECTION ================= -->
+  <!-- Top Dot Accent -->
+  <circle cx="458" cy="36" r="6" fill="#E21A25"/>
+
+  <!-- "ब्रेकिंग" (BREAKING) in Bold Red Typography -->
+  <g id="textBreaking">
+    <!-- Stylized Hindi "ब्रेकिंग" with exact letterforms and shadow -->
+    <text x="445" y="112" 
+          font-family="'Noto Sans Devanagari', 'Mukta', 'Inter', sans-serif" 
+          font-weight="900" 
+          font-size="82" 
+          fill="#E21A25" 
+          text-anchor="middle"
+          letter-spacing="-1.5">ब्रेकिंग</text>
+  </g>
+
+  <!-- "न्यूजवाला" (NEWSWALA) in Bold Red Typography -->
+  <g id="textNewswala">
+    <text x="450" y="186" 
+          font-family="'Noto Sans Devanagari', 'Mukta', 'Inter', sans-serif" 
+          font-weight="900" 
+          font-size="74" 
+          fill="#E21A25" 
+          text-anchor="middle"
+          letter-spacing="-1">न्यूजवाला</text>
+  </g>
+
+  <!-- Red Underline Bar Separator -->
+  <line x1="295" y1="202" x2="605" y2="202" stroke="#E21A25" stroke-width="4.5" stroke-linecap="round"/>
+
+  <!-- Tagline: "भारत के जिलों से, आपके दिलों तक" in Dark Navy/Charcoal -->
+  <g id="tagline">
+    <text x="448" y="234" 
+          font-family="'Noto Sans Devanagari', 'Mukta', 'Inter', sans-serif" 
+          font-weight="800" 
+          font-size="24" 
+          fill="#1C2333" 
+          text-anchor="middle"
+          letter-spacing="-0.3">भारत के जिलों से, आपके दिलों तक</text>
+  </g>
+</svg>
