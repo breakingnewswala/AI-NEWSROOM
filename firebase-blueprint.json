@@ -1,0 +1,131 @@
+{
+  "entities": {
+    "NewsCard": {
+      "title": "NewsCard",
+      "description": "Represents an automated or manual news card item for 4:5 graphics and broadcast publishing.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the news card"
+        },
+        "district": {
+          "type": "string",
+          "description": "English district name",
+          "maxLength": 64
+        },
+        "districtHindi": {
+          "type": "string",
+          "description": "Hindi district name",
+          "maxLength": 64
+        },
+        "headline": {
+          "type": "string",
+          "description": "Main catchy headline in Hindi",
+          "maxLength": 300
+        },
+        "summary": {
+          "type": "string",
+          "description": "Summary of the news story",
+          "maxLength": 1000
+        },
+        "bulletPoints": {
+          "type": "array",
+          "description": "Key bullet highlights for the 4:5 graphic"
+        },
+        "caption": {
+          "type": "string",
+          "description": "Multi-channel social caption with hashtags",
+          "maxLength": 4000
+        },
+        "image": {
+          "type": "string",
+          "description": "Image URL for the graphic background",
+          "maxLength": 1000
+        },
+        "page": {
+          "type": "string",
+          "description": "Target publishing page name",
+          "maxLength": 128
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "published"],
+          "description": "Approval queue status"
+        },
+        "urgency": {
+          "type": "string",
+          "enum": ["Breaking", "Top Story", "Normal", "Viral"],
+          "description": "Urgency rating"
+        },
+        "category": {
+          "type": "string",
+          "description": "News category",
+          "maxLength": 128
+        },
+        "accent": {
+          "type": "string",
+          "description": "Graphic accent theme: Red, Gold, or Blue",
+          "maxLength": 32
+        },
+        "filter": {
+          "type": "string",
+          "description": "Image filter: none, grayscale, sepia, or high-contrast",
+          "maxLength": 32
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp ISO string",
+          "maxLength": 64
+        }
+      },
+      "required": ["district", "headline", "status"]
+    },
+    "AutomationRule": {
+      "title": "AutomationRule",
+      "description": "RSS feed scraping and automated posting rules",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Rule identifier"
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "district": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "url": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "target": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "mode": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "status": {
+          "type": "string",
+          "maxLength": 32
+        }
+      },
+      "required": ["name", "url", "status"]
+    }
+  },
+  "firestore": {
+    "/news_cards/{cardId}": {
+      "schema": "NewsCard",
+      "description": "Collection of news cards in the control room approval queue and published archive"
+    },
+    "/automation_rules/{ruleId}": {
+      "schema": "AutomationRule",
+      "description": "Collection of district RSS automation and syndication rules"
+    }
+  }
+}

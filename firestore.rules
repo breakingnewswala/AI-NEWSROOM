@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidNewsCard(data) {
+      return data.keys().hasAll(['district', 'headline', 'status'])
+        && data.district is string && data.district.size() <= 64
+        && data.headline is string && data.headline.size() <= 300
+        && data.status in ['pending', 'published'];
+    }
+
+    function isValidRule(data) {
+      return data.keys().hasAll(['name', 'url', 'status'])
+        && data.name is string && data.name.size() <= 128
+        && data.url is string && data.url.size() <= 512;
+    }
+
+    match /news_cards/{cardId} {
+      allow read: if true;
+      allow create: if isValidId(cardId) && isValidNewsCard(incoming());
+      allow update: if isValidId(cardId) && isValidNewsCard(incoming());
+      allow delete: if isValidId(cardId);
+    }
+
+    match /automation_rules/{ruleId} {
+      allow read: if true;
+      allow create, update: if isValidId(ruleId) && isValidRule(incoming());
+      allow delete: if isValidId(ruleId);
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

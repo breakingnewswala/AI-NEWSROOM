@@ -1,0 +1,12 @@
+{
+  "projectId": "ai-newsroom-server",
+  "appId": "1:188322285092:web:b00f44e3bd37cfe0eb7ab1",
+  "apiKey": "AIzaSyA0Ax453CyUZV4yn4nOYIp6KvLFl7rWYM4",
+  "authDomain": "ai-newsroom-server.firebaseapp.com",
+  "firestoreDatabaseId": "ai-studio-ainewsroom-51693534-be9a-401b-bad6-32d95198caab",
+  "storageBucket": "ai-newsroom-server.firebasestorage.app",
+  "messagingSenderId": "188322285092",
+  "measurementId": "",
+  "oAuthClientId": "188322285092-pqudkvuh7c4aiui6eppldabrfa3dfgeh.apps.googleusercontent.com",
+  "recaptchaSiteKey": ""
+}

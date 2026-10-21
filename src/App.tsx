@@ -695,6 +695,8 @@ export default function App() {
   const [templatePreviewMode, setTemplatePreviewMode] = useState<'grid' | 'single'>('grid');
   const [showPollConfigInEdit, setShowPollConfigInEdit] = useState(false);
   const [newsAlertAccent, setNewsAlertAccent] = useState<'Red' | 'Gold' | 'Blue'>('Red');
+  type GraphicFilter = 'none' | 'grayscale' | 'sepia' | 'high-contrast';
+  const [graphicFilter, setGraphicFilter] = useState<GraphicFilter>('none');
 
   const cycleNewsAlertAccent = (e?: React.MouseEvent) => {
     if (e) {
@@ -706,6 +708,38 @@ export default function App() {
       showToast(`लेआउट एक्सेंट बदला गया: ${labelMap[next]} (${next})`);
       return next;
     });
+  };
+
+  const cycleGraphicFilter = (e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
+    setGraphicFilter(prev => {
+      const order: GraphicFilter[] = ['none', 'grayscale', 'sepia', 'high-contrast'];
+      const nextIdx = (order.indexOf(prev) + 1) % order.length;
+      const next = order[nextIdx];
+      const labelMap: Record<GraphicFilter, string> = {
+        none: 'ओरिजिनल (None)',
+        grayscale: 'ग्रेस्केल (Grayscale)',
+        sepia: 'सेपिया (Sepia)',
+        'high-contrast': 'हाई-कंट्रास्ट (High Contrast)'
+      };
+      showToast(`इमेज फिल्टर लागू: ${labelMap[next]}`);
+      return next;
+    });
+  };
+
+  const getFilterStyle = (filter: GraphicFilter): React.CSSProperties => {
+    switch (filter) {
+      case 'grayscale':
+        return { filter: 'grayscale(100%)' };
+      case 'sepia':
+        return { filter: 'sepia(90%) contrast(105%)' };
+      case 'high-contrast':
+        return { filter: 'contrast(160%) brightness(105%) saturate(120%)' };
+      default:
+        return { filter: 'none' };
+    }
   };
 
   // PWA Install State (No auto-popup when entering app as requested)
@@ -766,17 +800,39 @@ export default function App() {
     return localStorage.getItem('custom_original_logo') || '/Logo.png';
   });
 
-  // One-time PNG logo indicator state (hidden permanently once dismissed/uploaded, clean on mobile & desktop)
+  // One-time PNG logo indicator state (shown only once, then hidden permanently on both desktop & mobile Chrome)
   const [showPngButton, setShowPngButton] = useState<boolean>(() => {
-    return localStorage.getItem('hide_png_button') !== 'true';
+    try {
+      const alreadyHidden = localStorage.getItem('hide_png_button') === 'true' || localStorage.getItem('has_seen_png_prompt') === 'true';
+      return !alreadyHidden;
+    } catch {
+      return false;
+    }
   });
+
+  useEffect(() => {
+    if (showPngButton) {
+      // Auto-retire the PNG upload badge after 6 seconds of initial visibility so it never lingers on mobile or desktop
+      const timer = setTimeout(() => {
+        try {
+          localStorage.setItem('hide_png_button', 'true');
+          localStorage.setItem('has_seen_png_prompt', 'true');
+        } catch {}
+        setShowPngButton(false);
+      }, 6000);
+      return () => clearTimeout(timer);
+    }
+  }, [showPngButton]);
 
   const dismissPngButton = (e?: React.MouseEvent) => {
     if (e) {
       e.stopPropagation();
       e.preventDefault();
     }
-    localStorage.setItem('hide_png_button', 'true');
+    try {
+      localStorage.setItem('hide_png_button', 'true');
+      localStorage.setItem('has_seen_png_prompt', 'true');
+    } catch {}
     setShowPngButton(false);
     showToast('PNG बटन हटा दिया गया है');
   };
@@ -1369,7 +1425,7 @@ Here is our comprehensive video breakdown of the administrative implications.
 
         {/* ================= PRIMARY BROADCAST TOP NAVIGATION MENU ================= */}
         {/* Single-line sleek broadcast menu with Left/Right smooth scroll buttons and zero text wrapping */}
-        <div className="flex items-center justify-between px-2 sm:px-4 md:px-6 bg-[#080B12]/95 backdrop-blur-2xl border-t border-[#1A2234] border-b border-[#1A2234]/80 text-xs shadow-2xl relative w-full">
+        <div className="hidden lg:flex items-center justify-between px-2 sm:px-4 md:px-6 bg-[#080B12]/95 backdrop-blur-2xl border-t border-[#1A2234] border-b border-[#1A2234]/80 text-xs shadow-2xl relative w-full">
           {/* Subtle top red glow line */}
           <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#E21A25]/50 to-transparent"></div>
 
@@ -1537,13 +1593,20 @@ Here is our comprehensive video breakdown of the administrative implications.
 
         {/* Dynamic Continuous Scrolling Breaking News Alert Ticker */}
         <div className="bg-gradient-to-r from-[#B70F18] via-[#D0121C] to-[#8F0C13] text-white text-xs font-semibold px-2 sm:px-4 py-1.5 flex items-center overflow-hidden border-t border-red-900/60 shadow-inner relative select-none">
-          {/* Live Alert Fixed Badge */}
-          <div className="flex items-center gap-1.5 z-10 shrink-0 bg-[#FFED00] text-slate-950 font-black text-[10px] px-2.5 py-0.5 rounded shadow mr-2 uppercase tracking-wide border border-yellow-300">
+          {/* Live Alert Fixed Badge - Desktop: Full badge; Mobile: Icon only so 95%+ width is dedicated to readable ticker */}
+          <div className="hidden sm:flex items-center gap-1.5 z-10 shrink-0 bg-[#FFED00] text-slate-950 font-black text-[10px] px-2.5 py-0.5 rounded shadow mr-2 uppercase tracking-wide border border-yellow-300">
             <Radio className="w-3 h-3 text-red-600 animate-pulse fill-current" />
             <span>लाइव अलर्ट</span>
             <span className="bg-red-600 text-white text-[8px] font-bold px-1 rounded ml-0.5">
               FEED {tickerFeedIndex + 1}/{tickerNewsList.length}
             </span>
+          </div>
+
+          <div
+            className="sm:hidden flex items-center justify-center z-10 shrink-0 bg-[#FFED00] text-red-600 p-1 rounded-md shadow mr-1.5 border border-yellow-300"
+            title="लाइव अलर्ट फीड"
+          >
+            <Radio className="w-3.5 h-3.5 text-red-600 animate-pulse fill-current" />
           </div>
 
           {/* Continuous Scrolling Marquee Feed */}
@@ -4601,33 +4664,38 @@ https://whatsapp.com/channel/breakingnewswala`}
 
                     {/* Graphic Preview Container */}
                     <div className="flex flex-col items-center bg-black/60 p-2.5 rounded-xl space-y-2">
-                      {/* 'Toggle Layout' Button directly on top of the preview */}
-                      <div className="w-full max-w-[280px] flex items-center justify-between px-2 py-1.5 bg-[#141A28] rounded-xl border border-slate-700/80 shadow-md">
-                        <div className="flex items-center gap-1.5 text-[10px] text-slate-300 font-bold">
-                          <Palette className="w-3.5 h-3.5 text-[#FFED00]" />
-                          <span>एक्सेंट:</span>
-                          <span className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider flex items-center gap-1 shadow-sm ${
-                            newsAlertAccent === 'Red'
-                              ? 'bg-red-600/30 text-red-200 border border-red-500/50'
-                              : newsAlertAccent === 'Gold'
-                              ? 'bg-amber-500/30 text-amber-200 border border-amber-500/50'
-                              : 'bg-blue-600/30 text-blue-200 border border-blue-500/50'
-                          }`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${
-                              newsAlertAccent === 'Red' ? 'bg-red-500 animate-pulse' : newsAlertAccent === 'Gold' ? 'bg-amber-400' : 'bg-blue-400'
-                            }`}></span>
-                            {newsAlertAccent}
-                          </span>
-                        </div>
-
+                      {/* 'Toggle Layout' and 'Apply Filter' Buttons directly on top of the preview */}
+                      <div className="w-full max-w-[280px] flex items-center justify-between gap-1.5 px-2 py-1.5 bg-[#141A28] rounded-xl border border-slate-700/80 shadow-md">
                         <button
                           type="button"
                           onClick={cycleNewsAlertAccent}
-                          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-extrabold bg-[#E21A25]/25 hover:bg-[#E21A25]/45 text-[#FFED00] hover:text-white border border-[#E21A25]/60 hover:border-[#FFED00]/70 transition-all cursor-pointer shadow hover:scale-105 active:scale-95"
+                          className="flex items-center gap-1 px-2 py-1 rounded-lg text-[9px] font-extrabold bg-[#E21A25]/25 hover:bg-[#E21A25]/45 text-[#FFED00] hover:text-white border border-[#E21A25]/60 hover:border-[#FFED00]/70 transition-all cursor-pointer shadow hover:scale-105 active:scale-95 shrink-0"
                           title="ग्राफिक एक्सेंट रंग बदलें: Red → Gold → Blue"
                         >
                           <RotateCw className="w-2.5 h-2.5 text-[#FFED00]" />
                           <span>Toggle Layout</span>
+                          <span className={`px-1 py-0.2 rounded text-[8px] font-black uppercase ${
+                            newsAlertAccent === 'Red'
+                              ? 'bg-red-600 text-white'
+                              : newsAlertAccent === 'Gold'
+                              ? 'bg-amber-500 text-slate-950'
+                              : 'bg-blue-600 text-white'
+                          }`}>
+                            {newsAlertAccent}
+                          </span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={cycleGraphicFilter}
+                          className="flex items-center gap-1 px-2 py-1 rounded-lg text-[9px] font-extrabold bg-blue-600/25 hover:bg-blue-600/45 text-cyan-300 hover:text-white border border-blue-500/60 hover:border-cyan-300/80 transition-all cursor-pointer shadow hover:scale-105 active:scale-95 shrink-0"
+                          title="इमेज फिल्टर बदलें: None → Grayscale → Sepia → High-Contrast"
+                        >
+                          <Sparkles className="w-2.5 h-2.5 text-cyan-300" />
+                          <span>Apply Filter</span>
+                          <span className="px-1 py-0.2 rounded text-[8px] font-black uppercase bg-slate-900/90 text-cyan-200 border border-slate-700">
+                            {graphicFilter === 'none' ? 'None' : graphicFilter === 'grayscale' ? 'Gray' : graphicFilter === 'sepia' ? 'Sepia' : 'Hi-Con'}
+                          </span>
                         </button>
                       </div>
 
@@ -4641,7 +4709,8 @@ https://whatsapp.com/channel/breakingnewswala`}
                         <img
                           src={editingCard.image}
                           alt="preview"
-                          className="absolute inset-0 w-full h-full object-cover"
+                          style={getFilterStyle(graphicFilter)}
+                          className="absolute inset-0 w-full h-full object-cover transition-all duration-300"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/45 to-black/80"></div>
                         {/* Optional subtle color aura on the graphic */}
@@ -4771,7 +4840,8 @@ https://whatsapp.com/channel/breakingnewswala`}
                         <img
                           src={editingCard.image}
                           alt="preview"
-                          className="absolute inset-0 w-full h-full object-cover opacity-60"
+                          style={getFilterStyle(graphicFilter)}
+                          className="absolute inset-0 w-full h-full object-cover opacity-60 transition-all duration-300"
                         />
                         <div className="absolute inset-0 bg-gradient-to-b from-slate-950/90 via-slate-950/60 to-slate-950/95"></div>
 
@@ -4858,7 +4928,8 @@ https://whatsapp.com/channel/breakingnewswala`}
                         <img
                           src={editingCard.image}
                           alt="preview"
-                          className="absolute inset-0 w-full h-full object-cover opacity-40"
+                          style={getFilterStyle(graphicFilter)}
+                          className="absolute inset-0 w-full h-full object-cover opacity-40 transition-all duration-300"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-[#0B1120] via-[#0B1120]/80 to-[#0B1120]/90"></div>
 
@@ -4986,38 +5057,43 @@ https://whatsapp.com/channel/breakingnewswala`}
                   </div>
 
                   {/* Render the Single Selected Template */}
+                  {/* Single Mode Preview Toolbar: Layout Accent & Apply Filter */}
+                  <div className="w-full max-w-[340px] flex items-center justify-between gap-1.5 px-2.5 py-1.5 bg-[#141A28] rounded-xl border border-slate-700/80 shadow-md mb-2">
+                    <button
+                      type="button"
+                      onClick={cycleNewsAlertAccent}
+                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-extrabold bg-[#E21A25]/25 hover:bg-[#E21A25]/45 text-[#FFED00] hover:text-white border border-[#E21A25]/60 hover:border-[#FFED00]/70 transition-all cursor-pointer shadow hover:scale-105 active:scale-95 shrink-0"
+                      title="ग्राफिक एक्सेंट रंग बदलें: Red → Gold → Blue"
+                    >
+                      <RotateCw className="w-2.5 h-2.5 text-[#FFED00]" />
+                      <span>Toggle Layout</span>
+                      <span className={`px-1.5 py-0.2 rounded text-[8px] font-black uppercase ${
+                        newsAlertAccent === 'Red'
+                          ? 'bg-red-600 text-white'
+                          : newsAlertAccent === 'Gold'
+                          ? 'bg-amber-500 text-slate-950'
+                          : 'bg-blue-600 text-white'
+                      }`}>
+                        {newsAlertAccent}
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={cycleGraphicFilter}
+                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-extrabold bg-blue-600/25 hover:bg-blue-600/45 text-cyan-300 hover:text-white border border-blue-500/60 hover:border-cyan-300/80 transition-all cursor-pointer shadow hover:scale-105 active:scale-95 shrink-0"
+                      title="इमेज फिल्टर बदलें: None → Grayscale → Sepia → High-Contrast"
+                    >
+                      <Sparkles className="w-2.5 h-2.5 text-cyan-300" />
+                      <span>Apply Filter</span>
+                      <span className="px-1.5 py-0.2 rounded text-[8px] font-black uppercase bg-slate-900/90 text-cyan-200 border border-slate-700">
+                        {graphicFilter === 'none' ? 'None' : graphicFilter === 'grayscale' ? 'Grayscale' : graphicFilter === 'sepia' ? 'Sepia' : 'Hi-Con'}
+                      </span>
+                    </button>
+                  </div>
+
                   {editCardTemplate === 'News-Alert' && (
                     <div className="flex flex-col items-center space-y-2">
-                      {/* 'Toggle Layout' Button directly on top of the preview */}
-                      <div className="w-full max-w-[340px] flex items-center justify-between px-2.5 py-1.5 bg-[#141A28] rounded-xl border border-slate-700/80 shadow-md">
-                        <div className="flex items-center gap-1.5 text-[10px] text-slate-300 font-bold">
-                          <Palette className="w-3.5 h-3.5 text-[#FFED00]" />
-                          <span>एक्सेंट:</span>
-                          <span className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider flex items-center gap-1 shadow-sm ${
-                            newsAlertAccent === 'Red'
-                              ? 'bg-red-600/30 text-red-200 border border-red-500/50'
-                              : newsAlertAccent === 'Gold'
-                              ? 'bg-amber-500/30 text-amber-200 border border-amber-500/50'
-                              : 'bg-blue-600/30 text-blue-200 border border-blue-500/50'
-                          }`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${
-                              newsAlertAccent === 'Red' ? 'bg-red-500 animate-pulse' : newsAlertAccent === 'Gold' ? 'bg-amber-400' : 'bg-blue-400'
-                            }`}></span>
-                            {newsAlertAccent}
-                          </span>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={cycleNewsAlertAccent}
-                          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-extrabold bg-[#E21A25]/25 hover:bg-[#E21A25]/45 text-[#FFED00] hover:text-white border border-[#E21A25]/60 hover:border-[#FFED00]/70 transition-all cursor-pointer shadow hover:scale-105 active:scale-95"
-                          title="ग्राफिक एक्सेंट रंग बदलें: Red → Gold → Blue"
-                        >
-                          <RotateCw className="w-2.5 h-2.5 text-[#FFED00]" />
-                          <span>Toggle Layout</span>
-                        </button>
-                      </div>
-
                       <div className={`w-full max-w-[340px] graphic-card-ratio rounded-xl overflow-hidden shadow-2xl relative border-2 flex flex-col justify-between bg-black transition-all duration-300 ${
                         newsAlertAccent === 'Red'
                           ? 'border-red-600/90 shadow-[0_0_24px_rgba(226,26,37,0.4)]'
@@ -5028,7 +5104,8 @@ https://whatsapp.com/channel/breakingnewswala`}
                         <img
                           src={editingCard.image}
                           alt="preview"
-                          className="absolute inset-0 w-full h-full object-cover"
+                          style={getFilterStyle(graphicFilter)}
+                          className="absolute inset-0 w-full h-full object-cover transition-all duration-300"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/45 to-black/80"></div>
                         <div className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${
@@ -5101,7 +5178,8 @@ https://whatsapp.com/channel/breakingnewswala`}
                       <img
                         src={editingCard.image}
                         alt="preview"
-                        className="absolute inset-0 w-full h-full object-cover opacity-60"
+                        style={getFilterStyle(graphicFilter)}
+                        className="absolute inset-0 w-full h-full object-cover opacity-60 transition-all duration-300"
                       />
                       <div className="absolute inset-0 bg-gradient-to-b from-slate-950/90 via-slate-950/60 to-slate-950/95"></div>
                       <div className="relative z-10 p-3 flex items-center justify-between border-b border-amber-500/20 bg-slate-950/40 backdrop-blur-sm">
@@ -5131,7 +5209,8 @@ https://whatsapp.com/channel/breakingnewswala`}
                       <img
                         src={editingCard.image}
                         alt="preview"
-                        className="absolute inset-0 w-full h-full object-cover opacity-40"
+                        style={getFilterStyle(graphicFilter)}
+                        className="absolute inset-0 w-full h-full object-cover opacity-40 transition-all duration-300"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-[#0B1120] via-[#0B1120]/80 to-[#0B1120]/90"></div>
                       <div className="relative z-10 p-2.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-between shadow">

@@ -72,7 +72,7 @@
 .animate-marquee {
   display: inline-flex;
   white-space: nowrap;
-  animation: marqueeScroll 30s linear infinite;
+  animation: marqueeScroll 75s linear infinite;
   will-change: transform;
 }
 

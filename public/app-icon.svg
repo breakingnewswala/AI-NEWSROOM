@@ -1,0 +1,197 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background & Metallic Gradients -->
+    <radialGradient id="badgeBg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1E2A4A"/>
+      <stop offset="65%" stop-color="#0B1020"/>
+      <stop offset="100%" stop-color="#05070D"/>
+    </radialGradient>
+    <linearGradient id="goldRing" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF275"/>
+      <stop offset="30%" stop-color="#E5A910"/>
+      <stop offset="60%" stop-color="#9A6900"/>
+      <stop offset="85%" stop-color="#FCD34D"/>
+      <stop offset="100%" stop-color="#845500"/>
+    </linearGradient>
+    <linearGradient id="redRing" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF2E3B"/>
+      <stop offset="50%" stop-color="#B70F18"/>
+      <stop offset="100%" stop-color="#5B050B"/>
+    </linearGradient>
+    <linearGradient id="chromeAi" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="25%" stop-color="#E2E8F0"/>
+      <stop offset="48%" stop-color="#94A3B8"/>
+      <stop offset="52%" stop-color="#475569"/>
+      <stop offset="75%" stop-color="#CBD5E1"/>
+      <stop offset="100%" stop-color="#F8FAFC"/>
+    </linearGradient>
+    <linearGradient id="blueGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#1D4ED8"/>
+    </linearGradient>
+    <linearGradient id="goldText" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFBEB"/>
+      <stop offset="30%" stop-color="#FDE047"/>
+      <stop offset="70%" stop-color="#EAB308"/>
+      <stop offset="100%" stop-color="#A16207"/>
+    </linearGradient>
+    <linearGradient id="bannerRed" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#8B0000"/>
+      <stop offset="20%" stop-color="#DC2626"/>
+      <stop offset="50%" stop-color="#EF4444"/>
+      <stop offset="80%" stop-color="#DC2626"/>
+      <stop offset="100%" stop-color="#8B0000"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000000" flood-opacity="0.8"/>
+    </filter>
+  </defs>
+
+  <!-- Outer Concentric Rings -->
+  <circle cx="256" cy="256" r="248" fill="url(#goldRing)"/>
+  <circle cx="256" cy="256" r="236" fill="url(#redRing)"/>
+  <circle cx="256" cy="256" r="226" fill="url(#goldRing)"/>
+  <circle cx="256" cy="256" r="218" fill="url(#badgeBg)"/>
+
+  <!-- Cyber Grid Lines in Studio Background -->
+  <g opacity="0.25" stroke="#38BDF8" stroke-width="1.5">
+    <circle cx="256" cy="220" r="140" fill="none"/>
+    <ellipse cx="256" cy="220" rx="140" ry="70" fill="none"/>
+    <ellipse cx="256" cy="220" rx="140" ry="25" fill="none"/>
+    <line x1="256" y1="80" x2="256" y2="360"/>
+    <line x1="116" y1="220" x2="396" y2="220"/>
+  </g>
+
+  <!-- Studio TV Camera (Left) -->
+  <g transform="translate(42, 130) scale(0.68)" filter="url(#shadow)">
+    <!-- Tripod Mount -->
+    <path d="M70,180 L80,220 L60,220 Z" fill="#334155"/>
+    <!-- Camera Body -->
+    <rect x="30" y="70" width="100" height="70" rx="8" fill="#1E293B" stroke="#64748B" stroke-width="3"/>
+    <rect x="40" y="80" width="80" height="50" rx="4" fill="#0F172A"/>
+    <!-- Red Tally Lamp -->
+    <circle cx="80" cy="105" r="14" fill="#EF4444" filter="url(#glow)"/>
+    <circle cx="80" cy="105" r="6" fill="#FEE2E2"/>
+    <!-- Sunshade Lens Hood -->
+    <polygon points="130,75 170,55 170,155 130,135" fill="#0F172A" stroke="#475569" stroke-width="3"/>
+    <!-- Top Handle & Viewfinder -->
+    <rect x="50" y="45" width="60" height="15" rx="5" fill="#475569"/>
+    <rect x="75" y="25" width="45" height="25" rx="4" fill="#1E293B" stroke="#94A3B8" stroke-width="2"/>
+    <circle cx="115" cy="37" r="5" fill="#EF4444"/>
+  </g>
+
+  <!-- Broadcast Reporter Microphone (Right) -->
+  <g transform="translate(370, 140) rotate(15) scale(0.72)" filter="url(#shadow)">
+    <!-- Mic Body -->
+    <path d="M30,120 L38,200 L52,200 L60,120 Z" fill="#1E293B" stroke="#475569" stroke-width="2"/>
+    <!-- Red News Flag Cube -->
+    <rect x="15" y="65" width="60" height="45" rx="4" fill="#DC2626" stroke="#FEF08A" stroke-width="2.5"/>
+    <text x="45" y="94" font-family="Arial, sans-serif" font-weight="900" font-size="14" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">NEWS</text>
+    <!-- Metal Mesh Capsule -->
+    <path d="M22,65 C22,35 68,35 68,65 Z" fill="#94A3B8" stroke="#E2E8F0" stroke-width="2.5"/>
+    <!-- Mesh Grille Pattern -->
+    <line x1="28" y1="45" x2="62" y2="45" stroke="#475569" stroke-width="1.5"/>
+    <line x1="24" y1="55" x2="66" y2="55" stroke="#475569" stroke-width="1.5"/>
+  </g>
+
+  <!-- Big Futuristic 3D "AI" Letters in Center -->
+  <g filter="url(#shadow)">
+    <!-- Letter 'A' -->
+    <!-- Cyan Outline Underglow -->
+    <path d="M190,265 L150,265 L215,85 L265,85 L260,265 L225,265 L220,225 L195,225 Z" fill="#0284C7" filter="url(#glow)" opacity="0.8"/>
+    <!-- 3D Bevel Body -->
+    <path d="M192,260 L158,260 L218,92 L260,92 L256,260 L225,260 L222,220 L195,220 Z M208,135 L198,195 L222,195 Z" fill="url(#chromeAi)" stroke="#38BDF8" stroke-width="3"/>
+    
+    <!-- Letter 'I' with Digital Pixel Circuit Accent -->
+    <path d="M280,92 L335,92 L335,260 L280,260 Z" fill="#0284C7" filter="url(#glow)" opacity="0.8"/>
+    <rect x="284" y="92" width="48" height="168" rx="2" fill="url(#chromeAi)" stroke="#38BDF8" stroke-width="3"/>
+    
+    <!-- Digital Yellow/Cyan Pixel Circuit Blocks -->
+    <rect x="338" y="96" width="14" height="14" rx="2" fill="#FACC15" filter="url(#glow)"/>
+    <rect x="356" y="96" width="12" height="12" rx="2" fill="#38BDF8"/>
+    <rect x="338" y="114" width="12" height="12" rx="2" fill="#38BDF8"/>
+    <rect x="354" y="114" width="14" height="14" rx="2" fill="#FACC15"/>
+    <rect x="338" y="132" width="10" height="10" rx="2" fill="#FACC15"/>
+  </g>
+
+  <!-- Red 3D Banner Plate Across Center for "न्यूज़ रूम" -->
+  <g filter="url(#shadow)">
+    <!-- Golden Backing Plate -->
+    <polygon points="50,335 90,275 422,275 462,335 422,395 90,395" fill="url(#goldRing)"/>
+    <!-- Red Primary Banner -->
+    <polygon points="56,335 94,282 418,282 456,335 418,388 94,388" fill="url(#bannerRed)" stroke="#FEF08A" stroke-width="3"/>
+    <!-- Top Highlight Line on Banner -->
+    <line x1="102" y1="288" x2="410" y2="288" stroke="#FECDD3" stroke-width="2" opacity="0.7"/>
+
+    <!-- 3D Hindi Text: न्यूज़ रूम (AI Newsroom) -->
+    <!-- Extruded 3D Shadow -->
+    <text x="256" y="358" font-family="'Noto Sans Devanagari', 'Inter', sans-serif" font-weight="900" font-size="70" fill="#78350F" text-anchor="middle" letter-spacing="2">न्यूज़ रूम</text>
+    <!-- Golden 3D Face -->
+    <text x="256" y="352" font-family="'Noto Sans Devanagari', 'Inter', sans-serif" font-weight="900" font-size="70" fill="url(#goldText)" text-anchor="middle" letter-spacing="2" stroke="#92400E" stroke-width="2">न्यूज़ रूम</text>
+  </g>
+
+  <!-- Bottom Curved Social Media Icons Dock Bar -->
+  <g transform="translate(0, 395)" filter="url(#shadow)">
+    <!-- Base Dock -->
+    <rect x="110" y="8" width="292" height="42" rx="14" fill="#090D18" stroke="#1E293B" stroke-width="2"/>
+    <rect x="114" y="10" width="284" height="38" rx="12" fill="#0F172A" opacity="0.9"/>
+
+    <!-- 1. YouTube (Red) -->
+    <g transform="translate(126, 15)">
+      <rect width="28" height="28" rx="7" fill="#DC2626"/>
+      <polygon points="10,8 20,14 10,20" fill="#FFFFFF"/>
+    </g>
+
+    <!-- 2. Facebook (Blue) -->
+    <g transform="translate(164, 15)">
+      <rect width="28" height="28" rx="7" fill="#1877F2"/>
+      <path d="M18,12 L18,9.5 C18,8.5 18.5,8 19.5,8 L21,8 L21,5 L18.5,5 C15.5,5 14,6.5 14,9.5 L14,12 L11,12 L11,16 L14,16 L14,24 L18,24 L18,16 L21,16 L21.5,12 Z" fill="#FFFFFF"/>
+    </g>
+
+    <!-- 3. Instagram (Gradient) -->
+    <g transform="translate(202, 15)">
+      <defs>
+        <linearGradient id="igGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#FFDC80"/>
+          <stop offset="50%" stop-color="#FD1D1D"/>
+          <stop offset="100%" stop-color="#833AB4"/>
+        </linearGradient>
+      </defs>
+      <rect width="28" height="28" rx="7" fill="url(#igGrad)"/>
+      <rect x="6" y="6" width="16" height="16" rx="4" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+      <circle cx="14" cy="14" r="4" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+      <circle cx="19" cy="9" r="1.2" fill="#FFFFFF"/>
+    </g>
+
+    <!-- 4. X / Twitter (Black) -->
+    <g transform="translate(240, 15)">
+      <rect width="28" height="28" rx="7" fill="#000000" stroke="#334155" stroke-width="1"/>
+      <text x="14" y="20" font-family="'Inter', sans-serif" font-weight="900" font-size="16" fill="#FFFFFF" text-anchor="middle">𝕏</text>
+    </g>
+
+    <!-- 5. WhatsApp (Green) -->
+    <g transform="translate(278, 15)">
+      <rect width="28" height="28" rx="7" fill="#22C55E"/>
+      <circle cx="14" cy="14" r="8" fill="#FFFFFF"/>
+      <path d="M12,10 C11.5,10 10.5,10.5 10.5,11.5 C10.5,13.5 13.5,16.5 15.5,16.5 C16.5,16.5 17,15.5 17,15 L15.5,13.5 L14.5,14.5 L12.5,12.5 L13.5,11.5 Z" fill="#22C55E"/>
+    </g>
+
+    <!-- 6. Telegram (Light Blue) -->
+    <g transform="translate(316, 15)">
+      <rect width="28" height="28" rx="7" fill="#0284C7"/>
+      <circle cx="14" cy="14" r="9" fill="#0284C7"/>
+      <polygon points="7,14 21,9 18,20 13,16 11,18 10,15" fill="#FFFFFF"/>
+    </g>
+
+    <!-- 7. LinkedIn (Dark Blue) -->
+    <g transform="translate(354, 15)">
+      <rect width="28" height="28" rx="7" fill="#0A66C2"/>
+      <text x="14" y="20" font-family="'Inter', sans-serif" font-weight="800" font-size="14" fill="#FFFFFF" text-anchor="middle">in</text>
+    </g>
+  </g>
+</svg>
