@@ -55,8 +55,27 @@ import {
   Mic,
   MicOff,
   Volume2,
-  Palette
+  Palette,
+  Crown,
+  LogOut,
+  LogIn,
+  Building2,
+  Globe,
+  Lock,
+  ShieldAlert
 } from 'lucide-react';
+import {
+  auth,
+  signInWithGoogle,
+  signOutUser,
+  syncUserProfile,
+  updateUserProfile,
+  MASTER_ADMIN_EMAIL,
+  isMasterAdminEmail,
+  type UserProfile,
+  type UserRole
+} from './lib/firebase';
+import { onAuthStateChanged, type User } from 'firebase/auth';
 import {
   ResponsiveContainer,
   LineChart,
@@ -67,6 +86,7 @@ import {
   Tooltip,
   Legend
 } from 'recharts';
+import { ChannelSettingsModal } from './components/ChannelSettingsModal';
 
 interface NewsCardItem {
   id: string;
@@ -160,12 +180,94 @@ const analytics30DaysData = [
 
 export default function App() {
   const [activeView, setActiveView] = useState<
-    'generatorQueue' | 'videoStudio' | 'distributionHub' | 'viralRadar' | 'analyticsView' | 'accountsConfig' | 'apiHub' | 'healthCheck'
+    'generatorQueue' | 'videoStudio' | 'distributionHub' | 'viralRadar' | 'analyticsView' | 'accountsConfig' | 'apiHub' | 'healthCheck' | 'masterAdminConsole'
   >('generatorQueue');
   const [selectedDistrictFilter, setSelectedDistrictFilter] = useState<string>('ALL');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [toast, setToast] = useState<{ show: boolean; title: string; message: string }>({ show: false, title: '', message: '' });
   const [chartMetricFilter, setChartMetricFilter] = useState<'both' | 'views' | 'followers'>('both');
+
+  // Multi-User RBAC & Google Authentication State
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [isSigningIn, setIsSigningIn] = useState(false);
+  const [guestAccessGranted, setGuestAccessGranted] = useState(false);
+  const [showChannelSettingsModal, setShowChannelSettingsModal] = useState(false);
+  const [onboardingStep, setOnboardingStep] = useState<number>(1);
+  const [termsAgreed, setTermsAgreed] = useState<boolean>(false);
+
+  // Registered Channel Admins for Master Admin Control View
+  const [channelAdminsList, setChannelAdminsList] = useState<UserProfile[]>([
+    {
+      uid: 'admin-sagar-01',
+      email: 'sagar.bulletin@gmail.com',
+      displayName: 'राजेश शर्मा (सागर हेड)',
+      photoURL: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80',
+      role: 'CHANNEL_ADMIN',
+      channelName: 'दैनिक सागर 24',
+      channelLogo: '/Logo.png',
+      district: 'सागर',
+      facebookConnected: true,
+      youtubeConnected: true,
+      instagramConnected: true,
+      twitterConnected: false,
+      linkedinConnected: false,
+      status: 'active',
+      createdAt: '2026-10-18T10:30:00Z'
+    },
+    {
+      uid: 'admin-indore-02',
+      email: 'indore.fastnews@gmail.com',
+      displayName: 'अमित वर्मा (इंदौर ब्यूरो)',
+      photoURL: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=80',
+      role: 'CHANNEL_ADMIN',
+      channelName: 'इंदौर फास्ट न्यूज़',
+      channelLogo: '/Logo.png',
+      district: 'इंदौर',
+      facebookConnected: true,
+      youtubeConnected: true,
+      instagramConnected: true,
+      twitterConnected: true,
+      linkedinConnected: true,
+      status: 'active',
+      createdAt: '2026-10-19T14:15:00Z'
+    },
+    {
+      uid: 'admin-bhopal-03',
+      email: 'bhopal.express@gmail.com',
+      displayName: 'प्रीति सक्सेना (भोपाल एडिटर)',
+      photoURL: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&auto=format&fit=crop&q=80',
+      role: 'CHANNEL_ADMIN',
+      channelName: 'भोपाल हेडलाइन लाइव',
+      channelLogo: '/Logo.png',
+      district: 'भोपाल',
+      facebookConnected: true,
+      youtubeConnected: false,
+      instagramConnected: true,
+      twitterConnected: true,
+      linkedinConnected: false,
+      status: 'active',
+      createdAt: '2026-10-20T08:00:00Z'
+    },
+    {
+      uid: 'admin-jabalpur-04',
+      email: 'jabalpur.patrika@gmail.com',
+      displayName: 'संजय पटेल (महाकोशल)',
+      photoURL: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&auto=format&fit=crop&q=80',
+      role: 'CHANNEL_ADMIN',
+      channelName: 'महाकोशल टुडे',
+      channelLogo: '/Logo.png',
+      district: 'जबलपुर',
+      facebookConnected: false,
+      youtubeConnected: true,
+      instagramConnected: false,
+      twitterConnected: true,
+      linkedinConnected: false,
+      status: 'pending',
+      createdAt: '2026-10-21T06:20:00Z'
+    }
+  ]);
 
   // API Credentials & Testing State
   const [apiKeys, setApiKeys] = useState<ApiKeysConfig>(() => {
@@ -846,12 +948,93 @@ export default function App() {
         if (result) {
           setCustomLogoUrl(result);
           localStorage.setItem('custom_original_logo', result);
-          localStorage.setItem('hide_png_button', 'true');
           setShowPngButton(false);
-          showToast('100% ओरिजिनल लोगो (PNG) सफलतापूर्वक सेट किया गया!');
+          if (currentUser?.uid) {
+            updateUserProfile(currentUser.uid, { channelLogo: result }).catch(console.error);
+          }
+          showToast('लोगो सफलतापूर्वक सेट व सिंक किया गया!');
         }
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  // Listen to Firebase Auth state
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setIsAuthLoading(true);
+      if (user) {
+        setCurrentUser(user);
+        try {
+          const profile = await syncUserProfile(user);
+          setUserProfile(profile);
+          if (profile.channelLogo && profile.channelLogo.trim() !== '') {
+            setCustomLogoUrl(profile.channelLogo);
+          }
+        } catch (e) {
+          console.error('Failed to sync profile:', e);
+          const isMaster = isMasterAdminEmail(user.email);
+          setUserProfile({
+            uid: user.uid,
+            email: user.email || '',
+            displayName: user.displayName || 'Newsroom Admin',
+            photoURL: user.photoURL || '',
+            role: isMaster ? 'MASTER_ADMIN' : 'CHANNEL_ADMIN',
+            channelName: isMaster ? 'AI Newsroom' : 'मेरा जिला लाइव',
+            channelLogo: '/Logo.png',
+            district: 'मध्य प्रदेश',
+            facebookConnected: isMaster,
+            youtubeConnected: isMaster,
+            status: 'active'
+          });
+        }
+      } else {
+        setCurrentUser(null);
+        setUserProfile(null);
+      }
+      setIsAuthLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const handleGoogleSignIn = async () => {
+    setIsSigningIn(true);
+    try {
+      const user = await signInWithGoogle();
+      showToast(`Google लॉगिन सफल: स्वागत है ${user.displayName || user.email}!`);
+    } catch (err: any) {
+      console.error(err);
+      showToast('Google साइन-इन रद्द या विफल हुआ। कृपया दोबारा प्रयास करें।');
+    } finally {
+      setIsSigningIn(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOutUser();
+      setGuestAccessGranted(false);
+      showToast('सफलतापूर्वक लॉगआउट किया गया!');
+    } catch (err) {
+      console.error(err);
+      showToast('लॉगआउट में समस्या आई');
+    }
+  };
+
+  const handleSaveChannelProfile = async (updates: Partial<UserProfile>) => {
+    if (!currentUser) return;
+    try {
+      await updateUserProfile(currentUser.uid, updates);
+      setUserProfile(prev => prev ? { ...prev, ...updates } : null);
+      if (updates.channelLogo) {
+        setCustomLogoUrl(updates.channelLogo);
+      }
+      setShowChannelSettingsModal(false);
+      showToast('चैनल प्रोफाइल व सोशल मीडिया सेटिंग्स सुरक्षित की गईं!');
+    } catch (e) {
+      console.error(e);
+      showToast('सेटिंग्स सेव करने में त्रुटि आई');
     }
   };
 
@@ -1209,6 +1392,302 @@ Here is our comprehensive video breakdown of the administrative implications.
 
   return (
     <div className="bg-[#080A0F] text-slate-100 min-h-screen flex flex-col antialiased selection:bg-[#E21A25] selection:text-white">
+      {/* ================= PRIMARY GOOGLE LOGIN FIRST SCREEN ================= */}
+      {!currentUser && !guestAccessGranted && (
+        <div className="fixed inset-0 z-50 bg-[#07090F] flex flex-col items-center justify-center p-3 sm:p-6 overflow-y-auto">
+          {/* Subtle Ambient Red Glow */}
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#E21A25]/15 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div className="relative z-10 max-w-2xl w-full bg-[#0E131F]/95 border-2 border-amber-500/40 rounded-3xl p-5 sm:p-7 shadow-2xl backdrop-blur-2xl text-center space-y-5 my-auto">
+            {/* Official AI Newsroom 3D Broadcast Logo Badge */}
+            <div className="flex justify-center">
+              <div className="relative p-1.5 rounded-full bg-gradient-to-b from-amber-400 via-red-600 to-yellow-500 shadow-[0_0_35px_rgba(226,26,37,0.5)] group">
+                <img
+                  src="/assets/aistudio/AI_Newsroom_Broadcast_Badge_811afc98.png"
+                  alt="AI Newsroom"
+                  className="h-24 sm:h-28 w-auto object-contain rounded-full drop-shadow-[0_8px_25px_rgba(0,0,0,0.8)]"
+                  onError={(e) => { e.currentTarget.src = '/Logo.png'; }}
+                />
+                <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-4 w-4 bg-[#FFED00] border-2 border-[#0E131F]"></span>
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E21A25]/20 text-[#FFED00] text-xs font-bold border border-red-500/40 uppercase tracking-wider mb-1.5">
+                <Radio className="w-3.5 h-3.5 animate-pulse text-red-500" />
+                <span>ऑल-इन-वन ब्रॉडकास्ट व सोशल मीडिया ऑटोमेशन इंजन</span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                AI Newsroom
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-lg mx-auto leading-relaxed">
+                अपने चैनल को तेजी से ग्रो करें • ऑटो-ग्राफिक्स, वीडियो सिंडिकेशन, RSS ऑटोमेशन व AI SEO
+              </p>
+            </div>
+
+            {/* STEP-BY-STEP FEATURE SHOWCASE CAROUSEL (Pages 1, 2, 3 with 2 features highlighted per page) */}
+            <div className="bg-[#121724] border border-[#232B3E] rounded-2xl p-4 sm:p-5 text-left space-y-4">
+              {/* Stepper Header Tabs */}
+              <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setOnboardingStep(1)}
+                    className={`px-2.5 sm:px-3 py-1 rounded-xl text-[11px] font-extrabold transition-all cursor-pointer ${
+                      onboardingStep === 1
+                        ? 'bg-amber-400 text-slate-950 shadow'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                    }`}
+                  >
+                    1. चैनल ग्रोथ
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setOnboardingStep(2)}
+                    className={`px-2.5 sm:px-3 py-1 rounded-xl text-[11px] font-extrabold transition-all cursor-pointer ${
+                      onboardingStep === 2
+                        ? 'bg-amber-400 text-slate-950 shadow'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                    }`}
+                  >
+                    2. सोशल सिंडिकेशन
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setOnboardingStep(3)}
+                    className={`px-2.5 sm:px-3 py-1 rounded-xl text-[11px] font-extrabold transition-all cursor-pointer ${
+                      onboardingStep === 3
+                        ? 'bg-amber-400 text-slate-950 shadow'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                    }`}
+                  >
+                    3. वीडियो व SEO
+                  </button>
+                </div>
+
+                <span className="text-[11px] font-mono font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                  पेज {onboardingStep} / 3
+                </span>
+              </div>
+
+              {/* PAGE 1: 4:5 Graphics & Viral Radar Growth */}
+              {onboardingStep === 1 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="p-3.5 rounded-xl bg-slate-900/90 border border-amber-500/30 space-y-2 hover:border-amber-400/60 transition-all">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="p-1.5 rounded-lg bg-amber-500/20 text-[#FFED00]">
+                          <Zap className="w-4 h-4 fill-current" />
+                        </div>
+                        <h3 className="text-xs font-black text-white">3-सेकंड ऑटो 4:5 ग्राफिक्स</h3>
+                      </div>
+                      <span className="text-[9px] bg-red-600/30 text-red-300 font-bold px-1.5 py-0.2 rounded border border-red-500/30">
+                        4:5 Ratio
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 leading-relaxed">
+                      रॉ न्यूज़ या वॉइस डिक्टेशन से 3 सेकंड में 1 कैची हिंदी हेडलाइन, 3 बुलेट पॉइंट्स और चैनल लोगो के साथ इंस्टाग्राम व फेसबुक रेडी 4:5 कार्ड्स तैयार।
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl bg-slate-900/90 border border-red-500/30 space-y-2 hover:border-red-400/60 transition-all">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="p-1.5 rounded-lg bg-red-600/20 text-red-400">
+                          <Flame className="w-4 h-4" />
+                        </div>
+                        <h3 className="text-xs font-black text-white">10x चैनल ग्रोथ व वायरल रडार</h3>
+                      </div>
+                      <span className="text-[9px] bg-amber-500/30 text-amber-300 font-bold px-1.5 py-0.2 rounded border border-amber-500/30">
+                        Viral 5.0x
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 leading-relaxed">
+                      ट्रेंडिंग खबरों का स्वतः डिटेक्शन और 2.5x से 5.0x वायरल स्पीड स्कोरिंग। सही समय पर सही खबर पब्लिश करके चैनल के फॉलोअर्स और व्यूज तेजी से बढ़ाएं।
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* PAGE 2: One-Click Social Syndication & Smart RSS Automation */}
+              {onboardingStep === 2 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="p-3.5 rounded-xl bg-slate-900/90 border border-blue-500/30 space-y-2 hover:border-blue-400/60 transition-all">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="p-1.5 rounded-lg bg-blue-600/20 text-cyan-300">
+                          <Share2 className="w-4 h-4" />
+                        </div>
+                        <h3 className="text-xs font-black text-white">वन प्लेटफॉर्म ऑल सोशल शेयरिंग</h3>
+                      </div>
+                      <span className="text-[9px] bg-blue-500/30 text-cyan-200 font-bold px-1.5 py-0.2 rounded border border-blue-500/30">
+                        7+ पेजेस
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 leading-relaxed">
+                      Facebook Pages, YouTube (Shorts व Videos), Instagram Reels, X (Twitter), WhatsApp Channels, Telegram और LinkedIn पर एक क्लिक में ऑटो-शेयरिंग व शेड्यूलिंग।
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl bg-slate-900/90 border border-emerald-500/30 space-y-2 hover:border-emerald-400/60 transition-all">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="p-1.5 rounded-lg bg-emerald-600/20 text-emerald-400">
+                          <Radio className="w-4 h-4" />
+                        </div>
+                        <h3 className="text-xs font-black text-white">RSS ऑटोमेशन व लाइव न्यूज़ फीड</h3>
+                      </div>
+                      <span className="text-[9px] bg-emerald-500/30 text-emerald-300 font-bold px-1.5 py-0.2 rounded border border-emerald-500/30">
+                        ऑटोपायलट
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 leading-relaxed">
+                      सरकारी पोर्टल्स, वायर एजेंसीज व कस्टम RSS फीड्स से खबरों का ऑटो-फेचिंग। एडमिन अप्रूवल मोड या 100% हैंड्स-फ्री ऑटोपायलट फॉरवर्डिंग।
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* PAGE 3: Video Studio, Full AI SEO & Thumbnail Engine */}
+              {onboardingStep === 3 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="p-3.5 rounded-xl bg-slate-900/90 border border-purple-500/30 space-y-2 hover:border-purple-400/60 transition-all">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="p-1.5 rounded-lg bg-purple-600/20 text-purple-300">
+                          <Clapperboard className="w-4 h-4" />
+                        </div>
+                        <h3 className="text-xs font-black text-white">फुल-स्टैक AI SEO इंजन</h3>
+                      </div>
+                      <span className="text-[9px] bg-purple-500/30 text-purple-200 font-bold px-1.5 py-0.2 rounded border border-purple-500/30">
+                        High CTR
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 leading-relaxed">
+                      वीडियो अपलोड करते ही YouTube के लिए हाई-सीटीआर हिंदी टाइटल्स, 18+ सर्च टैग्स, फेसबुक हुक, इंस्टाग्राम रील्स कैप्शन्स व एक्स अलर्ट्स स्वतः जनरेट।
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl bg-slate-900/90 border border-sky-500/30 space-y-2 hover:border-sky-400/60 transition-all">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="p-1.5 rounded-lg bg-sky-600/20 text-sky-300">
+                          <ImageIcon className="w-4 h-4" />
+                        </div>
+                        <h3 className="text-xs font-black text-white">16:9 थंबनेल व लाइव सोशल प्रीव्यू</h3>
+                      </div>
+                      <span className="text-[9px] bg-sky-500/30 text-sky-200 font-bold px-1.5 py-0.2 rounded border border-sky-500/30">
+                        16:9 Preview
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 leading-relaxed">
+                      हाई-कंट्रास्ट ब्रेकिंग बार, चैनल लोगो और कस्टम ओवरले के साथ पब्लिश करने से पहले YouTube व Facebook फीड का वास्तविक प्रीव्यू देखें।
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Stepper Navigation Buttons */}
+              <div className="flex items-center justify-between pt-2 border-t border-slate-800/80 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setOnboardingStep(prev => Math.max(1, prev - 1))}
+                  disabled={onboardingStep === 1}
+                  className="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1.5"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                  <span>पिछला फ़ीचर</span>
+                </button>
+
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3].map(step => (
+                    <span
+                      key={step}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${
+                        onboardingStep === step ? 'w-6 bg-amber-400' : 'w-2 bg-slate-700'
+                      }`}
+                    ></span>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setOnboardingStep(prev => Math.min(3, prev + 1))}
+                  disabled={onboardingStep === 3}
+                  className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1.5"
+                >
+                  <span>अगला फ़ीचर</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* MANDATORY USER AGREEMENT CHECKBOX */}
+            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 text-left">
+              <label className="flex items-start gap-3 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  id="terms-agreement-checkbox"
+                  checked={termsAgreed}
+                  onChange={(e) => setTermsAgreed(e.target.checked)}
+                  className="mt-1 w-4 h-4 rounded border-amber-500 text-red-600 focus:ring-amber-400 cursor-pointer accent-[#E21A25]"
+                />
+                <span className="text-xs text-slate-200 leading-snug font-medium">
+                  मैंने AI Newsroom के सभी फीचर्स व ऑटोमेशन नियमों को समझ लिया है और मैं अपने चैनल का सेटअप करना चाहता हूँ।
+                </span>
+              </label>
+            </div>
+
+            {/* Google Login Action Area */}
+            <div className="space-y-3 pt-1">
+              {!termsAgreed && (
+                <div className="text-[11px] text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-xl py-2 px-3 flex items-center justify-center gap-2">
+                  <span>💡 कृपया आगे बढ़ने के लिए ऊपर दिए गए नियमों पर सहमति टिक करें।</span>
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={handleGoogleSignIn}
+                disabled={!termsAgreed || isSigningIn}
+                className={`w-full py-3.5 px-5 rounded-2xl font-extrabold text-sm sm:text-base flex items-center justify-center gap-3 shadow-2xl transition-all border ${
+                  termsAgreed
+                    ? 'bg-white hover:bg-slate-100 text-slate-900 cursor-pointer hover:scale-[1.02] active:scale-[0.98] border-slate-300 shadow-white/10'
+                    : 'bg-slate-800/80 text-slate-500 border-slate-700 cursor-not-allowed opacity-50'
+                }`}
+              >
+                {isSigningIn ? (
+                  <RotateCw className="w-5 h-5 animate-spin text-[#E21A25]" />
+                ) : (
+                  <svg className="w-5 h-5" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                  </svg>
+                )}
+                <span>Google से जारी रखें (Continue with Google)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setGuestAccessGranted(true)}
+                className="w-full py-2.5 px-4 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-semibold border border-slate-800 transition-all cursor-pointer"
+              >
+                डेमो / गेस्ट मोड में प्रवेश करें (Guest Mode Preview)
+              </button>
+
+              <p className="text-[10px] text-slate-400 leading-snug">
+                🔒 मास्टर एडमिन सीधे अपने सुपर कंसोल में प्रवेश करेंगे। नए मीडिया पार्टनर्स Google लॉगिन के बाद अपना चैनल नाम, लोगो और सोशल अकाउंट्स सेटअप कर सकेंगे।
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ================= TOP HEADER (BRAND + QUICK ACTIONS) ================= */}
       <header className="sticky top-0 z-40 bg-[#0F131D]/95 backdrop-blur-md border-b border-[#232B3E] shadow-xl">
         <div className="px-3 sm:px-6 py-2.5 flex items-center justify-between gap-3">
@@ -1242,26 +1721,36 @@ Here is our comprehensive video breakdown of the administrative implications.
                   />
                 </div>
 
-                {/* Direct Upload Trigger for Original PNG Logo - One-time only */}
-                {showPngButton && (
-                  <div className="flex items-center gap-1 bg-amber-500/10 border border-amber-500/30 rounded px-1.5 py-0.5">
-                    <label
-                      htmlFor="header-logo-upload-input"
-                      className="flex items-center gap-1 text-[9px] font-bold text-amber-300 hover:text-amber-200 cursor-pointer transition-all"
-                      title="अपनी ओरिजिनल Logo.png फाइल को सीधे सेट / रीप्लेस करें"
-                    >
-                      <Upload className="w-2.5 h-2.5" />
-                      <span>PNG</span>
-                    </label>
+                {/* Always-accessible Logo Change / Upload Control */}
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <label
+                    htmlFor="header-logo-upload-input"
+                    className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-lg bg-slate-800/90 hover:bg-[#E21A25] text-amber-300 hover:text-white border border-amber-500/40 hover:border-red-500 shadow-sm transition-all cursor-pointer select-none group/upload shrink-0"
+                    title="चैनल या न्यूज़ रूम का लोगो बदलें (Change Logo)"
+                  >
+                    <Upload className="w-3 h-3 text-[#FFED00] group-hover/upload:scale-110 transition-transform" />
+                    <span className="hidden sm:inline">लोगो बदलें</span>
+                    <span className="sm:hidden">लोगो</span>
+                  </label>
+                  {customLogoUrl !== '/Logo.png' && (
                     <button
-                      onClick={dismissPngButton}
-                      className="p-0.5 text-amber-400 hover:text-white rounded hover:bg-amber-500/20 cursor-pointer"
-                      title="यह बटन हटाएं (Dismiss)"
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCustomLogoUrl('/Logo.png');
+                        localStorage.setItem('custom_original_logo', '/Logo.png');
+                        if (currentUser?.uid) {
+                          updateUserProfile(currentUser.uid, { channelLogo: '/Logo.png' }).catch(console.error);
+                        }
+                        showToast('डिफ़ॉल्ट AI न्यूज़ रूम लोगो रीसेट किया गया');
+                      }}
+                      className="p-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-[#FFED00] border border-slate-700 text-[10px] cursor-pointer"
+                      title="डिफ़ॉल्ट AI Newsroom लोगो रीसेट करें"
                     >
-                      <X className="w-2.5 h-2.5" />
+                      <RotateCw className="w-3 h-3" />
                     </button>
-                  </div>
-                )}
+                  )}
+                </div>
                 <input
                   id="header-logo-upload-input"
                   type="file"
@@ -1420,6 +1909,74 @@ Here is our comprehensive video breakdown of the administrative implications.
                 </div>
               )}
             </div>
+
+            {/* User Profile & Multi-User Role Badge */}
+            {currentUser ? (
+              <div className="flex items-center gap-2 pl-2 border-l border-slate-700/80">
+                {/* User Avatar */}
+                <div 
+                  className="relative cursor-pointer group"
+                  onClick={() => userProfile?.role === 'MASTER_ADMIN' ? setActiveView('masterAdminConsole') : setShowChannelSettingsModal(true)}
+                  title={userProfile?.role === 'MASTER_ADMIN' ? 'मास्टर एडमिन कंसोल खोलें' : 'चैनल प्रोफाइल सेटिंग्स खोलें'}
+                >
+                  <img
+                    src={currentUser.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80'}
+                    alt="user"
+                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border-2 border-amber-400/80 shadow"
+                  />
+                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-[#0F131D]"></span>
+                </div>
+
+                {/* Role and Name Pill */}
+                <div className="hidden md:flex flex-col">
+                  <div className="flex items-center gap-1.5">
+                    {userProfile?.role === 'MASTER_ADMIN' ? (
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-black uppercase bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 shadow">
+                        <Crown className="w-2.5 h-2.5" />
+                        मास्टर एडमिन
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-bold uppercase bg-blue-600/40 text-cyan-300 border border-blue-500/40">
+                        <Building2 className="w-2.5 h-2.5 text-cyan-400" />
+                        चैनल एडमिन
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-[11px] font-bold text-slate-200 max-w-[120px] truncate leading-tight">
+                    {userProfile?.channelName || currentUser.displayName || 'Newsroom Admin'}
+                  </span>
+                </div>
+
+                {/* Channel Settings Button for Sub-Admins */}
+                {userProfile?.role === 'CHANNEL_ADMIN' && (
+                  <button
+                    onClick={() => setShowChannelSettingsModal(true)}
+                    className="p-1.5 rounded-lg bg-blue-600/20 hover:bg-blue-600/40 text-cyan-300 border border-blue-500/40 text-[10px] cursor-pointer"
+                    title="चैनल प्रोफाइल व सोशल मीडिया सेटिंग्स"
+                  >
+                    <Settings2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+
+                {/* Logout Button */}
+                <button
+                  onClick={handleSignOut}
+                  className="p-1.5 rounded-lg bg-slate-800/80 hover:bg-red-600/80 text-slate-400 hover:text-white border border-slate-700 hover:border-red-500 transition-all cursor-pointer"
+                  title="लॉगआउट करें (Sign Out)"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleGoogleSignIn}
+                disabled={isSigningIn}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#E21A25] to-[#B70F18] hover:from-red-600 hover:to-red-700 text-white font-bold text-xs shadow-lg shadow-red-900/40 border border-red-400/50 cursor-pointer active:scale-95 transition-all"
+              >
+                <LogIn className="w-3.5 h-3.5 text-[#FFED00]" />
+                <span>Google लॉगिन</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -1564,6 +2121,22 @@ Here is our comprehensive video breakdown of the administrative implications.
               <span className="whitespace-nowrap tracking-tight">🔑 API कीज</span>
               <span className="whitespace-nowrap text-[10px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.2 rounded font-bold border border-emerald-500/30 shrink-0">
                 6 APIs
+              </span>
+            </button>
+
+            {/* 9. Master Admin Super Console */}
+            <button
+              onClick={() => setActiveView('masterAdminConsole')}
+              className={`group whitespace-nowrap shrink-0 relative inline-flex items-center gap-2 px-3.5 py-1.5 sm:py-2 rounded-xl font-bold transition-all duration-200 cursor-pointer ${
+                activeView === 'masterAdminConsole'
+                  ? 'bg-gradient-to-r from-amber-500 via-red-600 to-amber-600 text-white shadow-[0_0_20px_rgba(245,158,11,0.5)] border border-amber-400 ring-1 ring-[#FFED00]'
+                  : 'text-amber-300 hover:text-white hover:bg-slate-800/80 border border-amber-500/30 hover:border-amber-400/60'
+              }`}
+            >
+              <Crown className="w-4 h-4 shrink-0 text-[#FFED00] transition-transform group-hover:scale-110" />
+              <span className="whitespace-nowrap tracking-tight">👑 मास्टर एडमिन</span>
+              <span className="whitespace-nowrap text-[10px] bg-amber-400 text-slate-950 font-black px-1.5 py-0.2 rounded shadow shrink-0">
+                {channelAdminsList.length} चैनल्स
               </span>
             </button>
           </div>
@@ -2521,6 +3094,261 @@ Here is our comprehensive video breakdown of the administrative implications.
           </section>
         )}
 
+        {/* ================= SECTION: MASTER ADMIN SUPER CONSOLE ================= */}
+        {activeView === 'masterAdminConsole' && (
+          <section className="space-y-6">
+            {/* Master Banner */}
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#200508] via-[#150A1C] to-[#0A1224] border-2 border-amber-500/50 p-6 sm:p-8 shadow-2xl">
+              <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+              
+              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="space-y-2">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-[#FFED00] border border-amber-400/40 text-xs font-black uppercase tracking-wider">
+                    <Crown className="w-4 h-4 text-[#FFED00] animate-bounce" />
+                    <span>सुपर एडमिन कमांड सेंटर • Master Admin Gateway</span>
+                  </div>
+                  <h1 className="text-xl sm:text-3xl font-black text-white tracking-tight">
+                    मास्टर एडमिन कंट्रोल कंसोल
+                  </h1>
+                  <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
+                    मास्टर एडमिन सर्वर पर सभी APIs (Meta, Google, Gemini, YouTube, Telegram) को जोड़ता है और ऐप के लेआउट व स्ट्रक्चर को नियंत्रित करता है। नीचे सभी रजिस्टर्ड चैनल एडमिन्स (मल्टी-यूजर्स) की लिस्ट, उनके सोशल मीडिया ऑथेंटिकेशन और चैनल्स की स्थिति प्रदर्शित है।
+                  </p>
+                  <div className="flex items-center gap-2 text-xs text-amber-300 font-mono pt-1">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 pulse-live"></span>
+                    <span>मास्टर ईमेल:</span>
+                    <strong className="text-white underline">{MASTER_ADMIN_EMAIL}</strong>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-2 shrink-0">
+                  <button
+                    onClick={() => setActiveView('apiHub')}
+                    className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-black text-xs shadow-lg hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                  >
+                    <KeyRound className="w-4 h-4" />
+                    <span>सर्वर APIs Hub प्रबंधित करें</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveView('accountsConfig')}
+                    className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-white font-bold text-xs border border-slate-700 hover:border-slate-500 transition-all cursor-pointer"
+                  >
+                    <Settings2 className="w-4 h-4 text-cyan-300" />
+                    <span>ऑटोमेशन रूल्स सेटिंग्स</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Master KPI Stats */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-6 pt-6 border-t border-slate-800/80">
+                <div className="bg-[#0B0F19]/80 rounded-2xl p-3.5 border border-amber-500/30">
+                  <span className="text-[10px] font-bold text-amber-300 uppercase tracking-wider block">कुल चैनल एडमिन्स</span>
+                  <div className="text-2xl font-black text-white mt-1 flex items-center justify-between">
+                    <span>{channelAdminsList.length}</span>
+                    <Users className="w-5 h-5 text-amber-400 opacity-80" />
+                  </div>
+                  <span className="text-[10px] text-emerald-400 mt-1 block font-medium">3 एक्टिव • 1 समीक्षाधीन</span>
+                </div>
+
+                <div className="bg-[#0B0F19]/80 rounded-2xl p-3.5 border border-slate-800">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">सिंडिकेटेड रीच</span>
+                  <div className="text-2xl font-black text-[#FFED00] mt-1 flex items-center justify-between">
+                    <span>1.8M+</span>
+                    <TrendingUp className="w-5 h-5 text-[#FFED00] opacity-80" />
+                  </div>
+                  <span className="text-[10px] text-slate-400 mt-1 block">30D कुल व्यूज</span>
+                </div>
+
+                <div className="bg-[#0B0F19]/80 rounded-2xl p-3.5 border border-slate-800">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">एक्टिव डिस्ट्रिक्ट्स</span>
+                  <div className="text-2xl font-black text-white mt-1 flex items-center justify-between">
+                    <span>12</span>
+                    <Globe className="w-5 h-5 text-blue-400 opacity-80" />
+                  </div>
+                  <span className="text-[10px] text-slate-400 mt-1 block">मध्य प्रदेश नेटवर्क</span>
+                </div>
+
+                <div className="bg-[#0B0F19]/80 rounded-2xl p-3.5 border border-emerald-500/30">
+                  <span className="text-[10px] font-bold text-emerald-300 uppercase tracking-wider block">सर्वर APIs हेल्थ</span>
+                  <div className="text-2xl font-black text-emerald-400 mt-1 flex items-center justify-between">
+                    <span>6/6</span>
+                    <Server className="w-5 h-5 text-emerald-400 opacity-80" />
+                  </div>
+                  <span className="text-[10px] text-emerald-400 mt-1 block font-mono">68ms लेटेंसी</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Channel Admins Registry Management */}
+            <div className="bg-[#121622] rounded-2xl border border-[#232B3E] p-5 shadow-xl space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+                <div>
+                  <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                    <Building2 className="w-5 h-5 text-amber-400" />
+                    <span>रजिस्टर्ड चैनल एडमिन्स नेटवर्क (Multi-User Admins)</span>
+                  </h2>
+                  <p className="text-xs text-slate-400">
+                    यहाँ से आप प्रत्येक चैनल एडमिन के जुड़े हुए सोशल अकाउंट्स, चैनल का नाम, लोगो और एक्सेस अनुमतियों को देख व नियंत्रित कर सकते हैं।
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => {
+                    const sampleChannelName = prompt('नया चैनल नाम दर्ज करें:', 'ग्वालियर एक्सप्रेस 24');
+                    if (sampleChannelName) {
+                      setChannelAdminsList(prev => [
+                        ...prev,
+                        {
+                          uid: 'admin-' + Date.now(),
+                          email: `${sampleChannelName.toLowerCase().replace(/[^a-z0-9]/g, '')}@newsroom.in`,
+                          displayName: 'नया चैनल एडमिन',
+                          photoURL: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80',
+                          role: 'CHANNEL_ADMIN',
+                          channelName: sampleChannelName,
+                          channelLogo: '/Logo.png',
+                          district: 'ग्वालियर',
+                          facebookConnected: true,
+                          youtubeConnected: false,
+                          instagramConnected: false,
+                          twitterConnected: false,
+                          linkedinConnected: false,
+                          status: 'active',
+                          createdAt: new Date().toISOString()
+                        }
+                      ]);
+                      showToast(`नया चैनल एडमिन '${sampleChannelName}' सूची में जोड़ा गया!`);
+                    }
+                  }}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#E21A25] hover:bg-red-700 text-white font-bold text-xs shadow-md transition-all cursor-pointer self-start sm:self-auto"
+                >
+                  <PlusCircle className="w-4 h-4 text-[#FFED00]" />
+                  <span>नया चैनल एडमिन जोड़ें</span>
+                </button>
+              </div>
+
+              {/* Admins Grid Table */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {channelAdminsList.map(admin => (
+                  <div
+                    key={admin.uid}
+                    className="p-4 rounded-2xl bg-[#090C14] border border-slate-800/90 hover:border-slate-700 space-y-3 shadow-lg relative group"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={admin.channelLogo || '/Logo.png'}
+                          alt={admin.channelName}
+                          className="w-12 h-12 rounded-xl object-contain bg-black/60 p-1 border border-slate-700"
+                          onError={(e) => { e.currentTarget.src = '/Logo.png'; }}
+                        />
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-sm font-black text-white">{admin.channelName}</h3>
+                            <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-slate-800 text-amber-300 border border-slate-700">
+                              {admin.district}
+                            </span>
+                          </div>
+                          <div className="text-xs text-slate-300 font-medium">{admin.displayName}</div>
+                          <div className="text-[11px] text-slate-500 font-mono">{admin.email}</div>
+                        </div>
+                      </div>
+
+                      <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase ${
+                        admin.status === 'active'
+                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                          : admin.status === 'pending'
+                          ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/40'
+                          : 'bg-red-500/20 text-red-400 border border-red-500/40'
+                      }`}>
+                        {admin.status === 'active' ? '● एक्टिव' : admin.status === 'pending' ? '⏳ समीक्षाधीन' : '✕ सस्पेंडेड'}
+                      </span>
+                    </div>
+
+                    {/* Social Media Authentication Badges for this Channel Admin */}
+                    <div className="pt-2 border-t border-slate-800/70">
+                      <div className="text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider flex items-center justify-between">
+                        <span>सोशल मीडिया ऑथेंटिकेशन स्थिति:</span>
+                        <span className="text-slate-500 text-[9px] lowercase font-mono">auth tokens sync</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border flex items-center gap-1 ${
+                          admin.facebookConnected ? 'bg-blue-600/20 text-blue-300 border-blue-500/40' : 'bg-slate-900 text-slate-600 border-slate-800'
+                        }`}>
+                          <Check className={`w-3 h-3 ${admin.facebookConnected ? 'text-blue-400' : 'text-slate-600'}`} />
+                          <span>FB Page</span>
+                        </span>
+
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border flex items-center gap-1 ${
+                          admin.youtubeConnected ? 'bg-red-600/20 text-red-300 border-red-500/40' : 'bg-slate-900 text-slate-600 border-slate-800'
+                        }`}>
+                          <Check className={`w-3 h-3 ${admin.youtubeConnected ? 'text-red-400' : 'text-slate-600'}`} />
+                          <span>YouTube</span>
+                        </span>
+
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border flex items-center gap-1 ${
+                          admin.instagramConnected ? 'bg-pink-600/20 text-pink-300 border-pink-500/40' : 'bg-slate-900 text-slate-600 border-slate-800'
+                        }`}>
+                          <Check className={`w-3 h-3 ${admin.instagramConnected ? 'text-pink-400' : 'text-slate-600'}`} />
+                          <span>Instagram</span>
+                        </span>
+
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border flex items-center gap-1 ${
+                          admin.twitterConnected ? 'bg-slate-800 text-slate-200 border-slate-700' : 'bg-slate-900 text-slate-600 border-slate-800'
+                        }`}>
+                          <Check className={`w-3 h-3 ${admin.twitterConnected ? 'text-slate-200' : 'text-slate-600'}`} />
+                          <span>X (Twitter)</span>
+                        </span>
+
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border flex items-center gap-1 ${
+                          admin.linkedinConnected ? 'bg-indigo-600/20 text-indigo-300 border-indigo-500/40' : 'bg-slate-900 text-slate-600 border-slate-800'
+                        }`}>
+                          <Check className={`w-3 h-3 ${admin.linkedinConnected ? 'text-indigo-400' : 'text-slate-600'}`} />
+                          <span>LinkedIn</span>
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Master Actions */}
+                    <div className="pt-2 flex items-center justify-between text-xs">
+                      <button
+                        onClick={() => {
+                          setChannelAdminsList(prev => prev.map(a => {
+                            if (a.uid === admin.uid) {
+                              const newStatus = a.status === 'active' ? 'suspended' : 'active';
+                              showToast(`${a.channelName} की स्थिति: ${newStatus}`);
+                              return { ...a, status: newStatus };
+                            }
+                            return a;
+                          }));
+                        }}
+                        className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border transition-all cursor-pointer ${
+                          admin.status === 'active'
+                            ? 'bg-red-500/10 hover:bg-red-500/25 text-red-300 border-red-500/30'
+                            : 'bg-emerald-500/10 hover:bg-emerald-500/25 text-emerald-300 border-emerald-500/30'
+                        }`}
+                      >
+                        {admin.status === 'active' ? 'पॉज / सस्पेंड करें' : 'स्वीकृत / एक्टिव करें'}
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          const newName = prompt('चैनल का नया नाम:', admin.channelName);
+                          if (newName) {
+                            setChannelAdminsList(prev => prev.map(a => a.uid === admin.uid ? { ...a, channelName: newName } : a));
+                            showToast(`चैनल नाम अपडेट किया गया: ${newName}`);
+                          }
+                        }}
+                        className="text-[11px] font-medium text-slate-300 hover:text-white px-2 py-1 rounded hover:bg-slate-800 cursor-pointer"
+                      >
+                        एडिट चैनल
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* ================= SECTION 1: DISTRICT AUTO-GRAPHIC QUEUE ================= */}
         {activeView === 'generatorQueue' && (
           <section className="space-y-6">
@@ -2620,11 +3448,19 @@ Here is our comprehensive video breakdown of the administrative implications.
 
                           {/* Card Header in Red & Yellow Theme */}
                           <div className="relative z-10 p-2.5 flex items-center justify-between">
-                            <div className="bg-[#E21A25] text-white text-[8px] font-black px-2 py-0.5 rounded shadow flex items-center gap-1">
-                              <span>ब्रेकिंग न्यूज वाला</span>
+                            <div className="bg-[#E21A25] text-white text-[8px] font-black px-2 py-0.5 rounded shadow flex items-center gap-1.5">
+                              {customLogoUrl && (
+                                <img
+                                  src={customLogoUrl}
+                                  alt="Logo"
+                                  className="h-3.5 w-auto object-contain max-w-[44px]"
+                                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                />
+                              )}
+                              <span>{userProfile?.channelName || 'ब्रेकिंग न्यूज वाला'}</span>
                             </div>
                             <span className="bg-[#FFED00] text-slate-950 text-[8px] font-black px-2 py-0.5 rounded uppercase tracking-wider shadow">
-                              {item.districtHindi}
+                              {userProfile?.district && userProfile.role === 'CHANNEL_ADMIN' ? userProfile.district : item.districtHindi}
                             </span>
                           </div>
 
@@ -4740,7 +5576,7 @@ https://whatsapp.com/channel/breakingnewswala`}
                             <span className={`font-black text-[9px] tracking-wider uppercase ${
                               newsAlertAccent === 'Gold' ? 'text-slate-950 font-black' : newsAlertAccent === 'Blue' ? 'text-white' : 'text-[#FFED00]'
                             }`}>
-                              BREAKING WALA
+                              {userProfile?.channelName || 'AI NEWSROOM'}
                             </span>
                           </div>
                           <span className={`font-black text-[9px] px-2 py-0.5 rounded uppercase shadow transition-all duration-300 ${
@@ -5432,6 +6268,16 @@ https://whatsapp.com/channel/breakingnewswala`}
             </div>
           </div>
         </div>
+      )}
+
+      {/* ================= CHANNEL SETTINGS & SOCIAL AUTH MODAL ================= */}
+      {showChannelSettingsModal && (
+        <ChannelSettingsModal
+          userProfile={userProfile}
+          currentUser={currentUser}
+          onClose={() => setShowChannelSettingsModal(false)}
+          onSave={handleSaveChannelProfile}
+        />
       )}
 
       {/* ================= MOBILE BOTTOM FOOTER NAVIGATION ================= */}

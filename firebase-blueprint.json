@@ -1,5 +1,88 @@
 {
   "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile with role-based access control (Master Admin vs Channel Admin) and social connections",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "User Firebase Auth UID",
+          "maxLength": 128
+        },
+        "email": {
+          "type": "string",
+          "description": "User Google email address",
+          "maxLength": 256
+        },
+        "displayName": {
+          "type": "string",
+          "description": "User display name",
+          "maxLength": 128
+        },
+        "photoURL": {
+          "type": "string",
+          "description": "User avatar image URL",
+          "maxLength": 1000
+        },
+        "role": {
+          "type": "string",
+          "enum": ["MASTER_ADMIN", "CHANNEL_ADMIN"],
+          "description": "Role in AI Newsroom platform"
+        },
+        "channelName": {
+          "type": "string",
+          "description": "District channel or media house title",
+          "maxLength": 128
+        },
+        "channelLogo": {
+          "type": "string",
+          "description": "Channel custom logo URL or base64 image",
+          "maxLength": 500000
+        },
+        "district": {
+          "type": "string",
+          "description": "Associated district or state",
+          "maxLength": 64
+        },
+        "facebookConnected": {
+          "type": "boolean",
+          "description": "Facebook Page OAuth link state"
+        },
+        "youtubeConnected": {
+          "type": "boolean",
+          "description": "YouTube Channel OAuth link state"
+        },
+        "instagramConnected": {
+          "type": "boolean",
+          "description": "Instagram Creator account connection"
+        },
+        "twitterConnected": {
+          "type": "boolean",
+          "description": "X / Twitter connection"
+        },
+        "linkedinConnected": {
+          "type": "boolean",
+          "description": "LinkedIn Page connection"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "pending", "suspended"],
+          "description": "Account activation status"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp",
+          "maxLength": 64
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "ISO timestamp",
+          "maxLength": 64
+        }
+      },
+      "required": ["uid", "email", "role"]
+    },
     "NewsCard": {
       "title": "NewsCard",
       "description": "Represents an automated or manual news card item for 4:5 graphics and broadcast publishing.",
@@ -73,6 +156,11 @@
           "description": "Image filter: none, grayscale, sepia, or high-contrast",
           "maxLength": 32
         },
+        "createdBy": {
+          "type": "string",
+          "description": "UID of admin creator",
+          "maxLength": 128
+        },
         "createdAt": {
           "type": "string",
           "description": "Timestamp ISO string",
@@ -119,6 +207,10 @@
     }
   },
   "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Registered Master Admin and Channel Admins profiles"
+    },
     "/news_cards/{cardId}": {
       "schema": "NewsCard",
       "description": "Collection of news cards in the control room approval queue and published archive"

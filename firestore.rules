@@ -13,6 +13,24 @@ service cloud.firestore {
       return resource.data;
     }
 
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isMasterAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'breakingnewswala.com@gmail.com' ||
+        request.auth.token.email == 'admin.ainewsroom@gmail.com'
+      );
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'role'])
+        && data.uid is string && data.uid.size() <= 128
+        && data.email is string && data.email.size() <= 256
+        && data.role in ['MASTER_ADMIN', 'CHANNEL_ADMIN'];
+    }
+
     function isValidNewsCard(data) {
       return data.keys().hasAll(['district', 'headline', 'status'])
         && data.district is string && data.district.size() <= 64
@@ -26,13 +44,22 @@ service cloud.firestore {
         && data.url is string && data.url.size() <= 512;
     }
 
+    // Multi-User RBAC: Users collection
+    match /users/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isMasterAdmin());
+      allow create: if isSignedIn() && request.auth.uid == userId && isValidUser(incoming());
+      allow update: if isSignedIn() && (request.auth.uid == userId || isMasterAdmin()) && isValidUser(incoming());
+      allow delete: if isMasterAdmin();
+    }
+
+    // Broadcast News Cards
     match /news_cards/{cardId} {
       allow read: if true;
-      allow create: if isValidId(cardId) && isValidNewsCard(incoming());
-      allow update: if isValidId(cardId) && isValidNewsCard(incoming());
+      allow create, update: if isValidId(cardId) && isValidNewsCard(incoming());
       allow delete: if isValidId(cardId);
     }
 
+    // Automation Rules
     match /automation_rules/{ruleId} {
       allow read: if true;
       allow create, update: if isValidId(ruleId) && isValidRule(incoming());
