@@ -20,7 +20,8 @@ service cloud.firestore {
     function isMasterAdmin() {
       return isSignedIn() && (
         request.auth.token.email == 'breakingnewswala.com@gmail.com' ||
-        request.auth.token.email == 'admin.ainewsroom@gmail.com'
+        request.auth.token.email == 'admin.ainewsroom@gmail.com' ||
+        request.auth.token.email == 'editor.bnwtv@gmail.com'
       );
     }
 

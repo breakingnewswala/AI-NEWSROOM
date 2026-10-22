@@ -25,7 +25,8 @@ export const googleProvider = new GoogleAuthProvider();
 
 export const MASTER_ADMIN_EMAILS = [
   'breakingnewswala.com@gmail.com',
-  'admin.ainewsroom@gmail.com'
+  'admin.ainewsroom@gmail.com',
+  'editor.bnwtv@gmail.com'
 ];
 export const MASTER_ADMIN_EMAIL = MASTER_ADMIN_EMAILS[0];
 
