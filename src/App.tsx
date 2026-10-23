@@ -97,6 +97,7 @@ import { CategoryLocationManagement } from './components/CategoryLocationManagem
 import { NewsFeedHub, type FeedArticleItem } from './components/NewsFeedHub';
 import { AutomationSchedulingHub } from './components/AutomationSchedulingHub';
 import { MasterAdminHub } from './components/MasterAdminHub';
+import { BroadcastAnalyticsHub } from './components/BroadcastAnalyticsHub';
 
 interface NewsCardItem {
   id: string;
@@ -2313,7 +2314,7 @@ Here is our comprehensive video breakdown of the administrative implications.
               </span>
             </button>
 
-            {/* 3. Distribution Hub */}
+            {/* 3. Distribution Hub (Phase 7) */}
             <button
               onClick={() => setActiveView('distributionHub')}
               className={`group whitespace-nowrap shrink-0 relative inline-flex items-center gap-2 px-3.5 py-1.5 sm:py-2 rounded-xl font-bold transition-all duration-200 cursor-pointer ${
@@ -2323,13 +2324,13 @@ Here is our comprehensive video breakdown of the administrative implications.
               }`}
             >
               <Share2 className={`w-4 h-4 shrink-0 transition-transform group-hover:scale-110 ${activeView === 'distributionHub' ? 'text-[#FFED00]' : 'text-slate-400 group-hover:text-emerald-400'}`} />
-              <span className="whitespace-nowrap tracking-tight">ब्रॉडकास्ट व शेयरिंग</span>
+              <span className="whitespace-nowrap tracking-tight">📡 ब्रॉडकास्ट व कम्युनिटी</span>
               <span className="whitespace-nowrap text-[10px] text-emerald-400 font-bold bg-emerald-500/20 px-1.5 py-0.2 rounded border border-emerald-500/30 shrink-0">
-                WA/TG
+                फेज 7 (WA/पुश)
               </span>
             </button>
 
-            {/* 4. Viral Radar */}
+            {/* 4. Viral Radar (Phase 7) */}
             <button
               onClick={() => setActiveView('viralRadar')}
               className={`group whitespace-nowrap shrink-0 relative inline-flex items-center gap-2 px-3.5 py-1.5 sm:py-2 rounded-xl font-bold transition-all duration-200 cursor-pointer ${
@@ -2339,10 +2340,13 @@ Here is our comprehensive video breakdown of the administrative implications.
               }`}
             >
               <Flame className="w-4 h-4 shrink-0 text-orange-400 transition-transform group-hover:scale-110" />
-              <span className="whitespace-nowrap tracking-tight">ट्रेंडिंग व वायरल खबर</span>
+              <span className="whitespace-nowrap tracking-tight">🔥 वायरल रडार</span>
+              <span className="whitespace-nowrap text-[10px] bg-red-500/20 text-red-300 font-bold px-1.5 py-0.2 rounded border border-red-500/30 shrink-0">
+                फेज 7 (52 जिले)
+              </span>
             </button>
 
-            {/* 5. Analytics View */}
+            {/* 5. Analytics View (Phase 7) */}
             <button
               onClick={() => setActiveView('analyticsView')}
               className={`group whitespace-nowrap shrink-0 relative inline-flex items-center gap-2 px-3.5 py-1.5 sm:py-2 rounded-xl font-bold transition-all duration-200 cursor-pointer ${
@@ -2352,7 +2356,10 @@ Here is our comprehensive video breakdown of the administrative implications.
               }`}
             >
               <TrendingUp className={`w-4 h-4 shrink-0 transition-transform group-hover:scale-110 ${activeView === 'analyticsView' ? 'text-[#FFED00]' : 'text-slate-400 group-hover:text-[#FFED00]'}`} />
-              <span className="whitespace-nowrap tracking-tight">रीच व 30D ग्रोथ</span>
+              <span className="whitespace-nowrap tracking-tight">📈 रीच व 30D ग्रोथ</span>
+              <span className="whitespace-nowrap text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-1.5 py-0.2 rounded border border-emerald-500/30 shrink-0">
+                फेज 7
+              </span>
             </button>
 
             {/* 6. Health Check */}
@@ -4604,459 +4611,30 @@ Here is our comprehensive video breakdown of the administrative implications.
           </section>
         )}
 
-        {/* ================= SECTION 3: DISTRIBUTION HUB ================= */}
-        {activeView === 'distributionHub' && (
-          <section className="space-y-6">
-            <div className="bg-[#121622] p-4 rounded-2xl border border-[#232B3E]">
-              <h1 className="text-lg sm:text-xl font-extrabold text-white flex items-center gap-2">
-                <Share2 className="w-5 h-5 text-emerald-400" />
-                3. डिस्ट्रीब्यूशन व एम्प्लीफिकेशन लेयर (WhatsApp, Telegram & Groups)
-              </h1>
-              <p className="text-xs sm:text-sm text-slate-300 mt-0.5">
-                खबर या वीडियो पब्लिश होते ही सीधे ऑफिशियल WhatsApp चैनल्स, Telegram बॉट और Facebook कम्युनिटी ग्रुप्स पर ब्रॉडकास्ट करें।
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 bg-[#121622] p-5 rounded-2xl border border-[#232B3E] space-y-4">
-                <span className="text-xs font-bold text-slate-300 uppercase block">
-                  त्वरित ब्रॉडकास्ट संदेश तैयार करें:
-                </span>
-                <div>
-                  <label className="text-[11px] text-slate-400 block mb-1">
-                    खबर का मुख्य लिंक या वीडियो यूआरएल:
-                  </label>
-                  <input
-                    type="text"
-                    defaultValue="https://breakingnewswala.in/bhopal-kolar-six-lane-update"
-                    className="w-full bg-slate-900 border border-[#232B3E] rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-[#E21A25]"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] text-slate-400 block mb-1">
-                    WhatsApp & Telegram अनुकूलित फॉर्मेट मैसेज:
-                  </label>
-                  <textarea
-                    rows={7}
-                    defaultValue={`🔴 *ब्रेकिंग न्यूज वाला - भोपाल अपडेट* 🔴
-
-*कोलार सिक्स लेन का काम अंतिम चरण में, 15 मई तक पूरा होगा डामरीकरण!*
-• कोलार के 5 लाख नागरिकों को ट्रैफिक जाम से मिलेगी मुक्ति।
-• नगर निगम व PWD ने 15 मई की डेडलाइन की तय।
-
-👉 *पूरी रिपोर्ट विस्तार से पढ़ें:*
-https://breakingnewswala.in/bhopal-kolar-six-lane-update
-
-📲 *हमारे WhatsApp चैनल से जुड़ें:*
-https://whatsapp.com/channel/breakingnewswala`}
-                    className="w-full bg-slate-900 border border-[#232B3E] rounded-xl p-3 text-xs text-slate-200 leading-relaxed font-mono focus:outline-none focus:border-[#E21A25]"
-                  ></textarea>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                  <button
-                    onClick={() => showToast('WhatsApp ऑफिशियल चैनल पर ब्रॉडकास्ट भेजा गया! 142,500 सब्सक्राइबर्स')}
-                    className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold p-3 rounded-xl text-xs shadow-lg transition-all cursor-pointer"
-                  >
-                    <MessageCircle className="w-4 h-4 text-[#FFED00]" />
-                    <span>WhatsApp ऑफिशियल चैनल पर भेजें</span>
-                  </button>
-                  <button
-                    onClick={() => showToast('Telegram चैनल व बॉट पर मैसेज सेंड हुआ! 58,900 सब्सक्राइबर्स')}
-                    className="flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-bold p-3 rounded-xl text-xs shadow-lg transition-all cursor-pointer"
-                  >
-                    <Send className="w-4 h-4 text-[#FFED00]" />
-                    <span>Telegram चैनल पर फॉरवर्ड करें</span>
-                  </button>
-                </div>
-              </div>
-
-              <div className="bg-[#121622] p-5 rounded-2xl border border-[#232B3E] space-y-4">
-                <span className="text-xs font-bold text-slate-300 uppercase block">
-                  ब्रॉडकास्ट ऑडियंस नेटवर्क:
-                </span>
-                <div className="space-y-3">
-                  <div className="p-3 rounded-xl bg-slate-900/80 border border-[#232B3E] flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
-                        WA
-                      </div>
-                      <div>
-                        <div className="text-xs font-bold text-white">WhatsApp Official Channel</div>
-                        <div className="text-[10px] text-slate-400">142,500+ सब्सक्राइबर्स</div>
-                      </div>
-                    </div>
-                    <span className="text-[10px] bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded">
-                      कनेक्टेड
-                    </span>
-                  </div>
-
-                  <div className="p-3 rounded-xl bg-slate-900/80 border border-[#232B3E] flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold">
-                        TG
-                      </div>
-                      <div>
-                        <div className="text-xs font-bold text-white">Telegram News Bot Hub</div>
-                        <div className="text-[10px] text-slate-400">58,900+ सब्सक्राइबर्स</div>
-                      </div>
-                    </div>
-                    <span className="text-[10px] bg-sky-500/20 text-sky-400 font-bold px-2 py-0.5 rounded">
-                      कनेक्टेड
-                    </span>
-                  </div>
-
-                  <div className="p-3 rounded-xl bg-slate-900/80 border border-[#232B3E] flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">
-                        FB
-                      </div>
-                      <div>
-                        <div className="text-xs font-bold text-white">FB Community Groups (8)</div>
-                        <div className="text-[10px] text-slate-400">320,000+ टोटल मेंबर्स</div>
-                      </div>
-                    </div>
-                    <span className="text-[10px] bg-blue-500/20 text-blue-400 font-bold px-2 py-0.5 rounded">
-                      ऑथराइज्ड
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* ================= SECTION 4: VIRAL & TRENDING RADAR ================= */}
-        {activeView === 'viralRadar' && (
-          <section className="space-y-6">
-            <div className="bg-[#121622] p-4 rounded-2xl border border-[#232B3E] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <h1 className="text-lg sm:text-xl font-extrabold text-white flex items-center gap-2">
-                  <Flame className="w-5 h-5 text-orange-500" />
-                  ट्रेंडिंग व वायरल खबर (AI Trending & Viral Intelligence)
-                </h1>
-                <p className="text-xs sm:text-sm text-slate-300 mt-0.5">
-                  रियल-टाइम भारत व मध्य प्रदेश में अभी क्या सर्च हो रहा है और कौन-से जिले की खबर में वायरल वेलोसिटी ज्यादा है।
-                </p>
-              </div>
-              <span className="text-xs bg-orange-500/20 text-orange-400 font-bold px-3 py-1.5 rounded-xl border border-orange-500/30 self-start sm:self-auto flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-orange-500 pulse-live"></span> लाइव ट्रेंडिंग डेटा
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Hot Keywords */}
-              <div className="bg-[#121622] p-4 rounded-2xl border border-[#232B3E] space-y-3">
-                <span className="text-xs font-bold text-white uppercase flex items-center gap-1.5">
-                  <TrendingUp className="w-4 h-4 text-[#E21A25]" /> हॉट सर्च कीवर्ड्स (MP & India)
-                </span>
-                <div className="space-y-2.5">
-                  <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
-                    <div>
-                      <div className="text-xs font-bold text-white">#BhopalKolarRoad</div>
-                      <div className="text-[10px] text-slate-400">सिक्स लेन व ट्रैफिक राहत</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-xs font-bold text-emerald-400">180K / hr</div>
-                      <span className="text-[9px] bg-red-500/20 text-red-400 px-1 py-0.2 rounded font-bold">+310% 🔥</span>
-                    </div>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
-                    <div>
-                      <div className="text-xs font-bold text-white">#MPVidhanSabha</div>
-                      <div className="text-[10px] text-slate-400">सत्र के हंगामे व बड़े विधेयक</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-xs font-bold text-emerald-400">145K / hr</div>
-                      <span className="text-[9px] bg-red-500/20 text-red-400 px-1 py-0.2 rounded font-bold">+280% 🔥</span>
-                    </div>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
-                    <div>
-                      <div className="text-xs font-bold text-white">#IndoreMetroTrial</div>
-                      <div className="text-[10px] text-slate-400">सुपर कॉरिडोर से नया रूट ट्रायल</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-xs font-bold text-emerald-400">92K / hr</div>
-                      <span className="text-[9px] bg-emerald-500/20 text-emerald-400 px-1 py-0.2 rounded font-bold">+120%</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* District Velocity */}
-              <div className="bg-[#121622] p-4 rounded-2xl border border-[#232B3E] space-y-3">
-                <span className="text-xs font-bold text-white uppercase flex items-center gap-1.5">
-                  <Radio className="w-4 h-4 text-orange-400" /> डिस्ट्रिक्ट वायरल वेलोसिटी ट्रैकर
-                </span>
-                <div className="space-y-3">
-                  <div className="p-3 rounded-xl bg-slate-900 border border-[#232B3E] space-y-2">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="bg-[#E21A25] text-white text-[10px] font-bold px-1.5 py-0.5 rounded">भोपाल जिला</span>
-                      <span className="text-emerald-400 font-bold text-[11px]">वेलोसिटी स्कोर: 96/100</span>
-                    </div>
-                    <p className="text-xs font-bold text-white">कोलार सिक्स लेन की 15 मई डेडलाइन घोषित</p>
-                    <div className="flex items-center justify-between pt-1">
-                      <span className="text-[10px] text-slate-400">5 लाख लोगों का सीधा जुड़ाव</span>
-                      <span className="text-[10px] text-emerald-400 font-bold">क्यू में एक्टिव ✓</span>
-                    </div>
-                  </div>
-                  <div className="p-3 rounded-xl bg-slate-900 border border-[#232B3E] space-y-2">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="bg-[#E21A25] text-white text-[10px] font-bold px-1.5 py-0.5 rounded">उज्जैन जिला</span>
-                      <span className="text-emerald-400 font-bold text-[11px]">वेलोसिटी स्कोर: 88/100</span>
-                    </div>
-                    <p className="text-xs font-bold text-white">महाकाल मंदिर में भस्म आरती के नए नियम लागू</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* AI Advisor */}
-              <div className="bg-[#121622] p-4 rounded-2xl border border-[#232B3E] space-y-3">
-                <span className="text-xs font-bold text-white uppercase flex items-center gap-1.5">
-                  <BrainCircuit className="w-4 h-4 text-purple-400" /> AI न्यूजरूम एडवाइजर
-                </span>
-                <div className="space-y-3 text-xs">
-                  <div className="p-3 rounded-xl bg-purple-900/20 border border-purple-500/30 text-purple-200 space-y-1">
-                    <span className="font-bold block text-purple-300">🎯 भोपाल पेज एडवाइस:</span>
-                    <p className="text-[11px] leading-relaxed">कोलार सिक्स लेन खबर पर वीडियो पैकेज और 4:5 कार्ड दोनों पोस्ट करें। कमेंट्स में ट्रैफिक सुझाव मांगें।</p>
-                  </div>
-                  <div className="p-3 rounded-xl bg-blue-900/20 border border-blue-500/30 text-blue-200 space-y-1">
-                    <span className="font-bold block text-blue-300">⏰ बेस्ट पोस्टिंग टाइम:</span>
-                    <p className="text-[11px] leading-relaxed">भोपाल व इंदौर पेजों पर शाम 07:30 PM से 08:45 PM के बीच एंगेजमेंट पीक पर रहेगा।</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* ================= SECTION 5: ANALYTICS ================= */}
-        {activeView === 'analyticsView' && (
-          <section className="space-y-6">
-            <div className="bg-[#121622] p-4 rounded-2xl border border-[#232B3E] flex items-center justify-between">
-              <div>
-                <h1 className="text-lg sm:text-xl font-extrabold text-white flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-emerald-400" />
-                  सोशल रीच, ऑडियंस व ग्रोथ एनालिटिक्स
-                </h1>
-                <p className="text-xs sm:text-sm text-slate-300 mt-0.5">
-                  सभी डिस्ट्रिक्ट पेजेस और मास्टर सोशल अकाउंट्स का एकीकृत रीच व एंगेजमेंट स्टेटस।
-                </p>
-              </div>
-              <span className="text-xs bg-slate-800 text-slate-300 px-3 py-1.5 rounded-xl border border-[#232B3E]">
-                पिछले 28 दिन
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              <div className="bg-[#121622] p-4 rounded-2xl border border-[#232B3E]">
-                <div className="text-[11px] font-bold text-slate-400 uppercase">कुल सोशल रीच</div>
-                <div className="text-xl sm:text-2xl font-black text-white mt-1">4.82 Million</div>
-                <div className="text-[11px] font-bold text-emerald-400 mt-1 flex items-center gap-1">
-                  <ArrowUpRight className="w-3.5 h-3.5" /> +24.6% पिछले माह से
-                </div>
-              </div>
-              <div className="bg-[#121622] p-4 rounded-2xl border border-[#232B3E]">
-                <div className="text-[11px] font-bold text-slate-400 uppercase">कुल वीडियो व्यूज</div>
-                <div className="text-xl sm:text-2xl font-black text-white mt-1">8.15 Million</div>
-                <div className="text-[11px] font-bold text-emerald-400 mt-1 flex items-center gap-1">
-                  <ArrowUpRight className="w-3.5 h-3.5" /> +31.2% (Shorts/Reels)
-                </div>
-              </div>
-              <div className="bg-[#121622] p-4 rounded-2xl border border-[#232B3E]">
-                <div className="text-[11px] font-bold text-slate-400 uppercase">कुल एंगेजमेंट व शेयर्स</div>
-                <div className="text-xl sm:text-2xl font-black text-white mt-1">942.3 K</div>
-                <div className="text-[11px] font-bold text-emerald-400 mt-1 flex items-center gap-1">
-                  <Share2 className="w-3.5 h-3.5" /> 142K WhatsApp शेयर्स
-                </div>
-              </div>
-              <div className="bg-[#121622] p-4 rounded-2xl border border-[#232B3E]">
-                <div className="text-[11px] font-bold text-slate-400 uppercase">नए फॉलोअर्स</div>
-                <div className="text-xl sm:text-2xl font-black text-white mt-1">+68,400</div>
-                <div className="text-[11px] font-bold text-emerald-400 mt-1 flex items-center gap-1">
-                  <TrendingUp className="w-3.5 h-3.5" /> 12 डिस्ट्रिक्ट पेजेस
-                </div>
-              </div>
-            </div>
-
-            {/* Recharts Line Chart: 30-Day Growth Trend of Followers & Video Views */}
-            <div className="bg-[#121622] p-5 rounded-2xl border-2 border-[#E21A25]/30 shadow-2xl space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#232B3E] pb-3">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#FFED00] pulse-live"></span>
-                    <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-                      <TrendingUp className="w-5 h-5 text-[#FFED00]" />
-                      30-दिवसीय ग्रोथ ट्रेंड: फॉलोअर्स व वीडियो व्यूज (Last 30 Days Growth)
-                    </h2>
-                  </div>
-                  <p className="text-xs text-slate-300 mt-0.5">
-                    मध्य प्रदेश के 12 जिलों के नेटवर्क और मास्टर YouTube/FB चैनल्स का दैनिक व्यूज व नए फॉलोअर्स विश्लेषण
-                  </p>
-                </div>
-
-                {/* Filter Controls for Chart */}
-                <div className="flex items-center gap-1.5 bg-slate-900 p-1 rounded-xl border border-[#232B3E] text-xs">
-                  <button
-                    onClick={() => setChartMetricFilter('both')}
-                    className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
-                      chartMetricFilter === 'both'
-                        ? 'bg-[#E21A25] text-white shadow'
-                        : 'text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    दोनों मेट्रिक्स
-                  </button>
-                  <button
-                    onClick={() => setChartMetricFilter('views')}
-                    className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
-                      chartMetricFilter === 'views'
-                        ? 'bg-amber-500 text-slate-950 shadow'
-                        : 'text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    केवल वीडियो व्यूज
-                  </button>
-                  <button
-                    onClick={() => setChartMetricFilter('followers')}
-                    className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
-                      chartMetricFilter === 'followers'
-                        ? 'bg-red-500 text-white shadow'
-                        : 'text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    केवल फॉलोअर्स
-                  </button>
-                </div>
-              </div>
-
-              {/* Chart Legend & Summary Tags */}
-              <div className="flex flex-wrap items-center justify-between gap-3 text-xs bg-slate-900/60 p-3 rounded-xl border border-slate-800">
-                <div className="flex items-center gap-4">
-                  {(chartMetricFilter === 'both' || chartMetricFilter === 'views') && (
-                    <div className="flex items-center gap-2">
-                      <span className="w-3 h-3 rounded-full bg-[#FFED00]"></span>
-                      <span className="text-slate-300">दैनिक वीडियो व्यूज (Video Views):</span>
-                      <strong className="text-[#FFED00]">8.15M कुल (Peak: 585K/दिन)</strong>
-                    </div>
-                  )}
-                  {(chartMetricFilter === 'both' || chartMetricFilter === 'followers') && (
-                    <div className="flex items-center gap-2">
-                      <span className="w-3 h-3 rounded-full bg-[#E21A25]"></span>
-                      <span className="text-slate-300">नए फॉलोअर्स (Followers Gained):</span>
-                      <strong className="text-red-400">+68,400 कुल (Peak: 4.9K/दिन)</strong>
-                    </div>
-                  )}
-                </div>
-                <span className="text-[11px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">
-                  ↑ 31.2% मासिक उछाल
-                </span>
-              </div>
-
-              {/* Recharts Container */}
-              <div className="w-full h-80 pt-2">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart
-                    data={analytics30DaysData}
-                    margin={{ top: 10, right: 30, left: 10, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#232B3E" vertical={false} />
-                    <XAxis
-                      dataKey="date"
-                      stroke="#8E9BAE"
-                      fontSize={11}
-                      tickLine={false}
-                      dy={8}
-                    />
-                    <YAxis
-                      yAxisId="left"
-                      stroke="#FFED00"
-                      fontSize={11}
-                      tickLine={false}
-                      tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`}
-                      domain={['auto', 'auto']}
-                    />
-                    <YAxis
-                      yAxisId="right"
-                      orientation="right"
-                      stroke="#E21A25"
-                      fontSize={11}
-                      tickLine={false}
-                      tickFormatter={(value) => `${(value / 1000).toFixed(1)}K`}
-                      domain={['auto', 'auto']}
-                    />
-                    <Tooltip
-                      content={({ active, payload, label }) => {
-                        if (active && payload && payload.length) {
-                          return (
-                            <div className="bg-[#121622] p-3 rounded-xl border-2 border-[#E21A25] shadow-2xl text-xs space-y-1.5 font-sans">
-                              <p className="font-bold text-white border-b border-slate-800 pb-1 flex items-center justify-between gap-3">
-                                <span>तारीख: {label} (2026)</span>
-                                <span className="text-[10px] text-slate-400">30D Matrix</span>
-                              </p>
-                              {payload.map((entry, index) => (
-                                <div key={`item-${index}`} className="flex items-center justify-between gap-4">
-                                  <span style={{ color: entry.color }} className="font-semibold flex items-center gap-1.5">
-                                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }}></span>
-                                    {entry.name}:
-                                  </span>
-                                  <span className="font-bold text-white font-mono">
-                                    {Number(entry.value).toLocaleString('hi-IN')}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          );
-                        }
-                        return null;
-                      }}
-                    />
-                    {(chartMetricFilter === 'both' || chartMetricFilter === 'views') && (
-                      <Line
-                        yAxisId="left"
-                        type="monotone"
-                        dataKey="views"
-                        name="दैनिक वीडियो व्यूज"
-                        stroke="#FFED00"
-                        strokeWidth={3}
-                        dot={{ r: 2.5, fill: '#FFED00' }}
-                        activeDot={{ r: 6, fill: '#FFED00', stroke: '#fff', strokeWidth: 2 }}
-                      />
-                    )}
-                    {(chartMetricFilter === 'both' || chartMetricFilter === 'followers') && (
-                      <Line
-                        yAxisId="right"
-                        type="monotone"
-                        dataKey="followers"
-                        name="नए फॉलोअर्स"
-                        stroke="#E21A25"
-                        strokeWidth={3}
-                        dot={{ r: 2.5, fill: '#E21A25' }}
-                        activeDot={{ r: 6, fill: '#E21A25', stroke: '#fff', strokeWidth: 2 }}
-                      />
-                    )}
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-
-              {/* Bottom Insight Footer */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2 text-xs">
-                <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-300">
-                  <span className="text-[#FFED00] font-bold block mb-1">🔥 उच्चतम व्यूज स्पाइक:</span>
-                  17 अक्टूबर (Day 30) पर 585,000 व्यूज दर्ज हुए, जिसमें भोपाल और इंदौर रील्स का योगदान 64% रहा।
-                </div>
-                <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-300">
-                  <span className="text-red-400 font-bold block mb-1">📈 फॉलोअर एक्विजिशन:</span>
-                  औसत 2,280 नए फॉलोअर्स प्रतिदिन जुड़े। यूट्यूब और इंस्टाग्राम पर 4:5 ग्राफिक्स से 3.8 गुना अधिक कन्वर्जन मिला।
-                </div>
-                <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-300">
-                  <span className="text-emerald-400 font-bold block mb-1">🎯 एआई ग्रोथ रिकमेंडेशन:</span>
-                  शाम 7:30 बजे वीडियो पब्लिश करने पर 30% अधिक व्यूज आए हैं। इस टाइम-स्लॉट को शेड्यूल में प्राथमिकता दें।
-                </div>
-              </div>
-            </div>
-          </section>
+        {/* ================= SECTION: BROADCAST, VIRAL RADAR & ANALYTICS (PHASE 7) ================= */}
+        {(activeView === 'distributionHub' || activeView === 'viralRadar' || activeView === 'analyticsView') && (
+          <BroadcastAnalyticsHub
+            onShowToast={showToast}
+            initialSubTab={
+              activeView === 'distributionHub'
+                ? 'broadcast'
+                : activeView === 'viralRadar'
+                ? 'viral'
+                : 'analytics'
+            }
+            analyticsData={analytics30DaysData}
+            onCreateGraphic={(data) => {
+              setQuickNewsDistrict(data.district);
+              setQuickNewsUrgency(data.urgency as any || 'Top Story');
+              setQuickNewsText(`【${data.district} बड़ी खबर】\n${data.headline}\n\n${data.summary}`);
+              setShowQuickNewsModal(true);
+              showToast(`ट्रेंड "${data.headline.slice(0, 30)}..." से 4:5 ग्राफिक जनरेटर खोला गया`);
+            }}
+            onOpenVideoStudio={(headline) => {
+              setActiveView('videoStudio');
+              showToast(`वीडियो स्टूडियो में खबर लोड की गई: ${headline.slice(0, 35)}...`);
+            }}
+          />
         )}
 
         {/* ================= SECTION: AUTOMATION & SCHEDULING ENGINE (PHASE 4) ================= */}
