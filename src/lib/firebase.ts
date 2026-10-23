@@ -47,11 +47,52 @@ export interface UserProfile {
   channelName: string;
   channelLogo: string;
   district: string;
+  // Personal Info
+  phone?: string;
+  altWhatsapp?: string;
+  designation?: string;
+  organization?: string;
+  websiteUrl?: string;
+  city?: string;
+  state?: string;
+  preferredLanguage?: string;
+  timezone?: string;
+  // Brand Settings
+  brandColor?: string;
+  headlineFont?: string;
+  headlineFontSize?: string;
+  cardTheme?: 'News-Alert' | 'Minimalist' | 'Poll-Format' | 'Breaking-Flash';
+  logoPosition?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+  footerText?: string;
+  socialHandle?: string;
+  showContactInfo?: boolean;
+  // Social Media OAuth Connections
   facebookConnected?: boolean;
   youtubeConnected?: boolean;
   instagramConnected?: boolean;
   twitterConnected?: boolean;
   linkedinConnected?: boolean;
+  // Captions & Permanent Hashtags (strictly max 5)
+  captionStyle?: 'formal' | 'breaking' | 'concise' | 'detailed' | 'custom';
+  defaultCaptionLang?: string;
+  captionLength?: 'short' | 'medium' | 'detailed';
+  captionTone?: 'factual' | 'urgent' | 'engaging';
+  useEmojis?: boolean;
+  includeChannelName?: boolean;
+  includeWebsiteUrl?: boolean;
+  permanentHashtags?: string[];
+  // Security & 2FA
+  twoFactorEnabled?: boolean;
+  // Notification Preferences
+  notifNewImportant?: boolean;
+  notifCategoryNews?: boolean;
+  notifGraphicReady?: boolean;
+  notifPublishSuccess?: boolean;
+  notifPublishFailed?: boolean;
+  notifSocialExpired?: boolean;
+  notifRssError?: boolean;
+  notifSecurityAlert?: boolean;
+  // Account Status
   status: 'active' | 'pending' | 'suspended';
   createdAt?: string;
   updatedAt?: string;
@@ -208,11 +249,43 @@ export async function syncUserProfile(user: User): Promise<UserProfile> {
     channelName: isMaster ? 'AI Newsroom' : 'मेरा जिला लाइव',
     channelLogo: isMaster ? '/Logo.png' : '',
     district: 'मध्य प्रदेश',
+    state: 'मध्य प्रदेश',
+    city: 'भोपाल',
+    designation: isMaster ? 'चीफ एडिटर व सिस्टम एडमिन' : 'ब्यूरो हेड',
+    organization: 'Breaking News Network',
+    websiteUrl: 'https://breakingnewswala.com',
+    preferredLanguage: 'हिंदी',
+    timezone: 'IST (UTC+5:30)',
+    brandColor: '#E21A25',
+    headlineFont: 'Noto Sans Devanagari',
+    headlineFontSize: 'Large (28px)',
+    cardTheme: 'News-Alert',
+    logoPosition: 'top-right',
+    footerText: 'सटीक एवं निष्पक्ष पत्रकारिता • ब्रेकिंग न्यूज वाला',
+    socialHandle: '@breakingnewswala',
+    showContactInfo: true,
     facebookConnected: isMaster,
     youtubeConnected: isMaster,
     instagramConnected: false,
     twitterConnected: false,
     linkedinConnected: false,
+    captionStyle: 'breaking',
+    defaultCaptionLang: 'hi',
+    captionLength: 'medium',
+    captionTone: 'urgent',
+    useEmojis: true,
+    includeChannelName: true,
+    includeWebsiteUrl: true,
+    permanentHashtags: ['#BreakingNews', '#MPNews', '#LatestUpdate', '#NewsToday'],
+    twoFactorEnabled: false,
+    notifNewImportant: true,
+    notifCategoryNews: true,
+    notifGraphicReady: true,
+    notifPublishSuccess: true,
+    notifPublishFailed: true,
+    notifSocialExpired: true,
+    notifRssError: true,
+    notifSecurityAlert: true,
     status: 'active',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()

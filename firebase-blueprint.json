@@ -70,6 +70,69 @@
           "enum": ["active", "pending", "suspended"],
           "description": "Account activation status"
         },
+        "phone": {
+          "type": "string",
+          "description": "Contact mobile phone",
+          "maxLength": 32
+        },
+        "altWhatsapp": {
+          "type": "string",
+          "description": "Alternate WhatsApp number",
+          "maxLength": 32
+        },
+        "designation": {
+          "type": "string",
+          "description": "Admin designation or editorial role",
+          "maxLength": 128
+        },
+        "organization": {
+          "type": "string",
+          "description": "Media house or channel organization name",
+          "maxLength": 128
+        },
+        "websiteUrl": {
+          "type": "string",
+          "description": "Official news portal website URL",
+          "maxLength": 256
+        },
+        "city": {
+          "type": "string",
+          "description": "Base city",
+          "maxLength": 64
+        },
+        "state": {
+          "type": "string",
+          "description": "State name",
+          "maxLength": 64
+        },
+        "brandColor": {
+          "type": "string",
+          "description": "Hex brand accent color",
+          "maxLength": 16
+        },
+        "cardTheme": {
+          "type": "string",
+          "enum": ["News-Alert", "Minimalist", "Poll-Format", "Breaking-Flash"],
+          "description": "Default news graphic card layout"
+        },
+        "footerText": {
+          "type": "string",
+          "description": "Disclaimer or footer text for graphics",
+          "maxLength": 256
+        },
+        "captionStyle": {
+          "type": "string",
+          "enum": ["formal", "breaking", "concise", "detailed", "custom"],
+          "description": "Default caption style template"
+        },
+        "permanentHashtags": {
+          "type": "array",
+          "description": "Strictly up to 5 permanent channel hashtags"
+        },
+        "twoFactorEnabled": {
+          "type": "boolean",
+          "description": "2FA state"
+        },
         "createdAt": {
           "type": "string",
           "description": "ISO timestamp",
